@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sincosoft SAS · Presupuesto 2027</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#fff;--bg2:#f5f5f4;--bg3:#ededeb;
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#888780;
+  --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);
+  --blue-bg:#e6f1fb;--blue:#185fa5;--blue-text:#0c447c;
+  --green-bg:#eaf3de;--green:#3b6d11;--green-text:#27500a;
+  --amber-bg:#faeeda;--amber-text:#633806;
+  --red-bg:#fcebeb;--red-text:#791f1f;
+  --purple-bg:#eeedfe;--purple:#534ab7;--purple-text:#3c3489;
+  --teal-bg:#e1f5ee;--teal-text:#085041;
+  --orange-bg:#fff4e6;--orange-text:#7c3500;
+  --r:8px;--rl:12px;--sh:0 1px 3px rgba(0,0,0,0.08);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1e1e1c;--bg2:#2a2a28;--bg3:#343432;
+  --text:#f0ede8;--text2:#b4b2a9;--text3:#888780;
+  --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);
+  --blue-bg:#042c53;--blue:#85b7eb;--blue-text:#b5d4f4;
+  --green-bg:#173404;--green:#97c459;--green-text:#c0dd97;
+  --amber-bg:#412402;--amber-text:#fac775;
+  --red-bg:#501313;--red-text:#f7c1c1;
+  --purple-bg:#26215c;--purple:#afa9ec;--purple-text:#cecbf6;
+  --teal-bg:#04342c;--teal-text:#9fe1cb;
+  --orange-bg:#3d1a00;--orange-text:#ffb870;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:var(--bg3);color:var(--text);min-height:100vh}
+.app{max-width:980px;margin:0 auto;padding:1rem}
+.screen{display:none}.screen.active{display:block}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:1.25rem;margin-bottom:1rem;box-shadow:var(--sh)}
+.metric{background:var(--bg2);border-radius:var(--r);padding:.85rem;text-align:center}
+.metric-label{font-size:11px;color:var(--text2);margin-bottom:3px}
+.metric-value{font-size:19px;font-weight:700}
+label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;margin-top:10px;font-weight:500}
+input,select,textarea{width:100%;font-size:13px;padding:7px 10px;border:0.5px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(56,138,221,.15)}
+textarea{resize:vertical;min-height:58px;line-height:1.5}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border:0.5px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,transform .1s}
+.btn:hover{background:var(--bg2)}.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--blue-bg);color:var(--blue-text);border-color:transparent}
+.btn-success{background:var(--green-bg);color:var(--green-text);border-color:transparent}
+.btn-danger{background:var(--red-bg);color:var(--red-text);border-color:transparent}
+.btn-purple{background:var(--purple-bg);color:var(--purple-text);border-color:transparent}
+.btn-orange{background:var(--orange-bg);color:var(--orange-text);border-color:transparent}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-full{width:100%;justify-content:center;padding:11px}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600}
+.badge-ok{background:var(--green-bg);color:var(--green-text)}
+.badge-pend{background:var(--amber-bg);color:var(--amber-text)}
+.badge-empty{background:var(--bg2);color:var(--text3)}
+.badge-lock{background:var(--red-bg);color:var(--red-text)}
+.badge-blue{background:var(--blue-bg);color:var(--blue-text)}
+.badge-purple{background:var(--purple-bg);color:var(--purple-text)}
+.badge-orange{background:var(--orange-bg);color:var(--orange-text)}
+.nav{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap}
+.nav-title{font-size:18px;font-weight:700;flex:1}
+.nav-sub{font-size:12px;color:var(--text2)}
+.sep{height:0.5px;background:var(--border);margin:1.25rem 0}
+.area-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:1rem;cursor:pointer;transition:border-color .15s,box-shadow .15s;box-shadow:var(--sh)}
+.area-card:hover{border-color:var(--blue);box-shadow:0 2px 8px rgba(56,138,221,.15)}
+.area-card.locked{opacity:.75;cursor:default}.area-card.locked:hover{border-color:var(--border);box-shadow:var(--sh)}
+.area-card.confidential{border-color:var(--purple);background:var(--purple-bg)}
+.area-card.confidential:hover{border-color:var(--purple);box-shadow:0 2px 8px rgba(83,74,183,.2)}
+.area-card.gastos-fijos{border-color:var(--orange-text);background:var(--orange-bg)}
+.area-card.gastos-fijos:hover{box-shadow:0 2px 8px rgba(124,53,0,.2)}
+.area-icon{font-size:22px;margin-bottom:6px}
+.area-name{font-size:13px;font-weight:700;margin-bottom:3px}
+.area-cc{font-size:10px;color:var(--text3);margin-bottom:5px}
+.area-total{font-size:13px;font-weight:700;color:var(--blue-text);margin-bottom:5px}
+.rubro-item{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.rubro-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px}
+.rubro-desc{font-size:13px;font-weight:700}
+.rubro-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.exec-selector{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.exec-btn{padding:4px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);font-weight:500}
+.exec-btn:hover{background:var(--bg3)}
+.exec-btn.active{background:var(--blue-bg);color:var(--blue-text);border-color:transparent;font-weight:700}
+.month-checks{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px}
+.month-check-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--text2);cursor:pointer}
+.month-check-item input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:var(--blue)}
+.month-check-item.checked{color:var(--blue-text);font-weight:600}
+.month-inputs-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:4px}
+.month-inputs-grid input{text-align:right;padding:4px 5px;font-size:12px}
+.month-labels{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:3px}
+.month-labels span{font-size:10px;color:var(--text3);text-align:center}
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{background:var(--bg2);padding:6px 8px;text-align:left;font-weight:600;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border2);white-space:nowrap;position:sticky;top:0}
+.data-table th.r,.data-table td.r{text-align:right}
+.data-table td{padding:5px 8px;border-bottom:0.5px solid var(--border)}
+.data-table tr:hover td{background:var(--bg2)}
+.data-table .total-row td{background:var(--blue-bg);color:var(--blue-text);font-weight:700;border-bottom:none}
+.data-table .total-purple td{background:var(--purple-bg);color:var(--purple-text);font-weight:700}
+.table-wrap{overflow-x:auto;max-height:480px;overflow-y:auto}
+.tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem}
+.tab{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);font-weight:500}
+.tab:hover{background:var(--bg2)}.tab.active{background:var(--blue-bg);color:var(--blue-text);border-color:transparent;font-weight:700}
+.empty-state{text-align:center;padding:2.5rem 1rem;color:var(--text3)}
+.empty-state .icon{font-size:36px;display:block;margin-bottom:10px}
+.progress-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width .3s}
+.alert{padding:10px 14px;border-radius:var(--r);font-size:13px;margin-bottom:1rem}
+.alert-warning{background:var(--amber-bg);color:var(--amber-text)}
+.alert-purple{background:var(--purple-bg);color:var(--purple-text)}
+.alert-orange{background:var(--orange-bg);color:var(--orange-text)}
+.alert-info{background:var(--blue-bg);color:var(--blue-text)}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal{background:var(--bg);border-radius:var(--rl);padding:1.5rem;max-width:520px;width:95%;box-shadow:0 8px 32px rgba(0,0,0,.2);max-height:92vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:1rem}
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:1.5rem;text-align:center;cursor:pointer;transition:border-color .15s;background:var(--bg2)}
+.upload-zone:hover{border-color:var(--blue)}
+.upload-zone input{display:none}
+.pin-card{background:var(--bg);border-radius:var(--rl);padding:1.5rem;text-align:center;box-shadow:var(--sh)}
+.pin-card.purple-theme{border:1.5px solid var(--purple)}
+.section-label{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;margin-top:4px}
+.help-text{font-size:11px;color:var(--text3);margin-top:3px;margin-bottom:8px}
+/* CEO Dashboard */
+.ceo-kpi{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:1rem;box-shadow:var(--sh)}
+.ceo-kpi-label{font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.ceo-kpi-value{font-size:22px;font-weight:700}
+.ceo-kpi-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.ceo-tab-panel{}
+.clase-bar-wrap{margin-bottom:6px}
+.clase-bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px}
+.clase-bar-track{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden}
+.clase-bar-fill{height:100%;border-radius:4px;transition:width .4s}
+.pend-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.pend-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px}
+.pend-dec-btn{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);transition:background .15s}
+.pend-dec-btn.aprobado{background:var(--green-bg);color:var(--green-text);border-color:transparent}
+.pend-dec-btn.rechazado{background:var(--red-bg);color:var(--red-text);border-color:transparent}
+.pend-dec-btn.revisar{background:var(--amber-bg);color:var(--amber-text);border-color:transparent}
+.mes-mini{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-top:6px}
+.mes-mini-cell{text-align:center;font-size:10px;padding:2px 1px;border-radius:3px}
+
+/* ── LOGIN SCREEN ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0d1f35 0%,#1C3557 50%,#2E75B6 100%);
+  padding:1rem;position:relative;overflow:hidden}
+.login-wrap::before{content:'';position:absolute;top:-40%;left:-20%;width:140%;height:140%;
+  background:radial-gradient(ellipse at 30% 40%,rgba(46,117,182,0.25) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 70%,rgba(28,53,87,0.4) 0%,transparent 50%);
+  pointer-events:none}
+.login-card{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);
+  border:0.5px solid rgba(255,255,255,0.15);border-radius:20px;
+  padding:2.5rem 2rem;max-width:420px;width:100%;
+  box-shadow:0 24px 64px rgba(0,0,0,0.4);position:relative;z-index:1;text-align:center}
+.login-logo{margin-bottom:1.5rem}
+.login-logo-icon{width:64px;height:64px;background:linear-gradient(135deg,#2E75B6,#1C3557);
+  border-radius:16px;display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;font-size:28px;box-shadow:0 8px 24px rgba(46,117,182,0.4)}
+.login-company{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:2px}
+.login-sub{font-size:12px;color:rgba(189,215,238,0.8);letter-spacing:1px;text-transform:uppercase;font-weight:500}
+.login-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:6px;margin-top:1.5rem}
+.login-desc{font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:1.5rem;line-height:1.6}
+.login-input-wrap{position:relative;margin-bottom:1rem}
+.login-input{width:100%;padding:14px 48px 14px 16px;font-size:15px;font-weight:600;
+  letter-spacing:3px;text-align:center;border:1px solid rgba(255,255,255,0.2);
+  border-radius:12px;background:rgba(255,255,255,0.08);color:#fff;outline:none;
+  transition:border-color .2s,background .2s}
+.login-input::placeholder{letter-spacing:1px;font-weight:400;font-size:13px;color:rgba(255,255,255,0.35)}
+.login-input:focus{border-color:rgba(189,215,238,0.6);background:rgba(255,255,255,0.12)}
+.login-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.4);font-size:18px;padding:4px}
+.login-btn{width:100%;padding:14px;font-size:14px;font-weight:700;letter-spacing:.5px;
+  background:linear-gradient(135deg,#2E75B6,#185fa5);color:#fff;border:none;
+  border-radius:12px;cursor:pointer;transition:opacity .2s,transform .1s;
+  box-shadow:0 4px 16px rgba(46,117,182,0.4)}
+.login-btn:hover{opacity:.92}.login-btn:active{transform:scale(.98)}
+.login-error{color:#f09595;font-size:12px;margin-top:8px;min-height:18px;font-weight:500}
+.login-footer{margin-top:1.75rem;font-size:11px;color:rgba(255,255,255,0.25);line-height:1.6}
+.login-dots{display:flex;justify-content:center;gap:6px;margin-top:1.5rem}
+.login-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2)}
+.login-dot.active{background:#2E75B6;width:20px;border-radius:3px}
+.login-shake{animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════ LOGIN ════════════════════════ -->
+<div id="screen-login" style="display:block">
+  <div class="login-wrap">
+    <div class="login-card">
+
+      <!-- Logo -->
+      <div class="login-logo">
+        <div class="login-logo-icon">📊</div>
+        <div class="login-company">SINCOSOFT SAS</div>
+        <div class="login-sub">Plataforma de Presupuesto 2027</div>
+      </div>
+
+      <!-- Form -->
+      <div class="login-title">Bienvenido</div>
+      <div class="login-desc">Ingresa el PIN de acceso para continuar.<br>Si no lo tienes, contáctate con el área financiera.</div>
+
+      <div class="login-input-wrap">
+        <input type="password" id="login-pin" class="login-input"
+          placeholder="Ingresa tu PIN de acceso"
+          onkeydown="if(event.key==='Enter')doLogin()"
+          autocomplete="off" maxlength="30">
+        <button class="login-eye" onclick="toggleLoginEye()" id="login-eye-btn" title="Mostrar/ocultar">👁</button>
+      </div>
+
+      <button class="login-btn" onclick="doLogin()">Ingresar →</button>
+      <div class="login-error" id="login-error"></div>
+
+      <!-- Decorative dots -->
+      <div class="login-dots">
+        <div class="login-dot active"></div>
+        <div class="login-dot"></div>
+        <div class="login-dot"></div>
+      </div>
+
+      <div class="login-footer">
+        Presupuesto 2027 · Fase de pruebas<br>
+        Para soporte contacta al área de Sistemas
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="main-app" style="display:none">
+
+
+<!-- HOME -->
+<div id="screen-home" class="screen active">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px">
+    <div>
+      <div style="font-size:22px;font-weight:700">Presupuesto Sincosoft SAS 2026</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:3px">Selecciona tu área para diligenciar los rubros</div>
+    </div>
+    <button class="btn btn-primary" onclick="goPin('consolidador')">🔒 Vista consolidador</button>
+  </div>
+  <div class="card" style="padding:1rem;margin-bottom:1.25rem">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+      <span style="font-size:13px;font-weight:600">Avance general — áreas</span>
+      <span id="home-progress-txt" style="font-size:13px;color:var(--text2)"></span>
+    </div>
+    <div class="progress-bar"><div id="home-progress-fill" class="progress-fill" style="width:0%"></div></div>
+  </div>
+  <div id="area-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:1.25rem"></div>
+  <div class="section-label">Módulos confidenciales</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:10px;margin-bottom:1.25rem">
+    <div class="area-card confidential" onclick="goPin('nomina')">
+      <div class="area-icon">👤</div>
+      <div class="area-name" style="color:var(--purple-text)">Nómina 2026</div>
+      <div class="area-cc" style="color:var(--purple-text);opacity:.8">Acceso restringido · PIN requerido</div>
+      <div id="nom-home-status" style="margin-top:8px"><span class="badge badge-purple">🔒 Confidencial</span></div>
+    </div>
+    <div class="area-card confidential" onclick="goPin('aumentos')">
+      <div class="area-icon">📈</div>
+      <div class="area-name" style="color:var(--purple-text)">Aumentos 2026</div>
+      <div class="area-cc" style="color:var(--purple-text);opacity:.8">Acceso restringido · PIN requerido</div>
+      <div id="aum-home-status" style="margin-top:8px"><span class="badge badge-purple">🔒 Confidencial</span></div>
+    </div>
+    <div class="area-card gastos-fijos" onclick="goPin('gastosfijos')">
+      <div class="area-icon">🏛️</div>
+      <div class="area-name" style="color:var(--orange-text)">Gastos fijos</div>
+      <div class="area-cc" style="color:var(--orange-text);opacity:.8">Servicios públicos · Arriendos · Adm. · PIN requerido</div>
+      <div id="gf-home-status" style="margin-top:8px"><span class="badge badge-orange">🔒 Restringido</span></div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;margin-top:4px">Aprobación ejecutiva</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:1.25rem">
+    <div onclick="goPin('ceo')" style="background:linear-gradient(135deg,#1C3557 0%,#2E75B6 100%);border-radius:var(--rl);padding:1rem;cursor:pointer;box-shadow:0 2px 8px rgba(28,53,87,.3);transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 4px 16px rgba(28,53,87,.5)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(28,53,87,.3)'">
+      <div style="font-size:22px;margin-bottom:6px">📊</div>
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:3px">Dashboard CEO</div>
+      <div style="font-size:10px;color:#BDD7EE;margin-bottom:8px">KPIs · Resumen presupuestal · Aprobación de rubros pendientes</div>
+      <div><span style="background:rgba(255,255,255,0.15);color:#BDD7EE;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">🔒 PIN requerido</span></div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--text3);text-align:center">📌 Los datos se guardan automáticamente en este dispositivo</div>
+</div>
+
+<!-- AREA FORM -->
+<div id="screen-area" class="screen">
+  <div class="nav">
+    <button class="btn btn-sm" onclick="goHome()">← Volver</button>
+    <div><div class="nav-title" id="area-title"></div><div class="nav-sub" id="area-subtitle"></div></div>
+    <span id="area-badge" class="badge"></span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:1rem" id="area-metrics"></div>
+  <div id="lock-alert" class="alert alert-warning" style="display:none">🔒 Área bloqueada. Solo el consolidador puede desbloquearla.</div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:14px;font-weight:700">📝 Rubros presupuestales</div>
+      <button class="btn btn-primary btn-sm" id="btn-add-rubro" onclick="openAddRubroModal()">+ Agregar rubro</button>
+    </div>
+    <div id="rubros-list"></div>
+    <div id="empty-state" class="empty-state" style="display:none">
+      <span class="icon">📂</span>
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px">Sin rubros aún</div>
+      <div style="font-size:12px">Usa "Agregar rubro" para empezar</div>
+    </div>
+  </div>
+  <div class="sep"></div>
+  <button class="btn btn-success btn-full" id="btn-marcar-lista" onclick="guardarArea()">✓ Marcar área como lista</button>
+  <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Los cambios se guardan automáticamente</div>
+</div>
+
+<!-- NÓMINA -->
+<div id="screen-nomina" class="screen">
+  <div class="nav">
+    <button class="btn btn-sm" onclick="goHome()">← Volver</button>
+    <div class="nav-title">👤 Nómina 2026</div>
+    <span class="badge badge-purple">Confidencial</span>
+  </div>
+  <div class="alert alert-purple">🔒 Módulo confidencial. <strong>No visible para las áreas.</strong> Solo aparece en el Excel del consolidador.</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:1rem" id="nom-metrics"></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:14px;font-weight:700">Empleados registrados</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label class="btn btn-purple btn-sm" style="cursor:pointer;margin:0">
+          📤 Cargar Excel
+          <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importNominaExcel(this)">
+        </label>
+        <button class="btn btn-sm" onclick="descargarPlantillaExcel('nomina')">⬇ Plantilla</button>
+        <button class="btn btn-purple btn-sm" onclick="openNominaModal()">+ Agregar manual</button>
+      </div>
+    </div>
+    <div class="alert alert-info" style="font-size:12px;padding:8px 12px;margin-bottom:10px">
+      📋 <strong>Formato Excel requerido:</strong> Columnas: Empleado | Cargo | Área/CC | Tipo | Salario básico | Aux. Transporte | Aux. Alimentación | Costo total mensual
+    </div>
+    <div class="table-wrap" id="nom-table-wrap">
+      <div class="empty-state" id="nom-empty"><span class="icon">👤</span><div style="font-size:14px;font-weight:600;margin-bottom:4px">Sin empleados aún</div><div style="font-size:12px">Carga el Excel o agrega manual</div></div>
+    </div>
+  </div>
+  <div class="sep"></div>
+  <button class="btn btn-success btn-full" onclick="marcarNominaLista()">✓ Marcar nómina como lista</button>
+</div>
+
+<!-- AUMENTOS -->
+<div id="screen-aumentos" class="screen">
+  <div class="nav">
+    <button class="btn btn-sm" onclick="goHome()">← Volver</button>
+    <div class="nav-title">📈 Aumentos 2026</div>
+    <span class="badge badge-purple">Confidencial</span>
+  </div>
+  <div class="alert alert-purple">🔒 Módulo confidencial. El aumento se acumula desde el mes de vigencia hasta diciembre, por cada centro de costo.</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:1rem" id="aum-metrics"></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:14px;font-weight:700">Aumentos registrados</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label class="btn btn-purple btn-sm" style="cursor:pointer;margin:0">
+          📤 Cargar Excel
+          <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importAumentosExcel(this)">
+        </label>
+        <button class="btn btn-sm" onclick="descargarPlantillaExcel('aumentos')">⬇ Plantilla</button>
+        <button class="btn btn-purple btn-sm" onclick="openAumentoModal()">+ Agregar manual</button>
+      </div>
+    </div>
+    <div class="alert alert-info" style="font-size:12px;padding:8px 12px;margin-bottom:10px">
+      📋 <strong>Formato Excel requerido:</strong> Columnas: Empleado | Área/CC | Tipo aumento | Mes vigencia (Ene/Feb/.../Dic o 1-12) | Monto mensual | Justificación
+    </div>
+    <div class="table-wrap" id="aum-table-wrap">
+      <div class="empty-state" id="aum-empty"><span class="icon">📈</span><div style="font-size:14px;font-weight:600;margin-bottom:4px">Sin aumentos aún</div><div style="font-size:12px">Carga el Excel o agrega manual</div></div>
+    </div>
+  </div>
+  <div class="sep"></div>
+  <button class="btn btn-success btn-full" onclick="marcarAumentosListos()">✓ Marcar aumentos como listos</button>
+</div>
+
+<!-- GASTOS FIJOS -->
+<div id="screen-gastosfijos" class="screen">
+  <div class="nav">
+    <button class="btn btn-sm" onclick="goHome()">← Volver</button>
+    <div class="nav-title">🏛️ Gastos fijos</div>
+    <span class="badge badge-orange">Restringido</span>
+  </div>
+
+  <!-- CONFIG PANEL -->
+  <div class="card" style="border-color:var(--orange-text)">
+    <div style="font-size:14px;font-weight:700;margin-bottom:12px">⚙️ Configuración — fuente de datos y parámetros</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <!-- Columna izquierda: carga de archivo -->
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px">1. Archivo de soporte (Estado de Resultados)</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Sube el Excel del año en curso con columnas: CC | Cuenta | Nombre cuenta | Ene | Feb | … | Ago (o más meses)</div>
+        <label class="btn btn-orange" style="cursor:pointer;margin:0;width:100%;justify-content:center">
+          📤 Cargar Excel de soporte
+          <input type="file" accept=".xlsx,.xls" style="display:none" onchange="importSoporteExcel(this)">
+        </label>
+        <div id="gf-source-info" style="margin-top:8px;font-size:12px;color:var(--text2)">
+          <span id="gf-source-txt">📋 Usando datos base 2025 (integrados)</span>
+        </div>
+      </div>
+
+      <!-- Columna derecha: parámetros -->
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px">2. Parámetros de cálculo</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div>
+            <label style="margin-top:0">Mes inicio promedio</label>
+            <select id="gf-mes-inicio" style="font-size:12px">
+              <option value="0">Enero</option><option value="1">Febrero</option>
+              <option value="2">Marzo</option><option value="3">Abril</option>
+              <option value="4">Mayo</option><option value="5">Junio</option>
+              <option value="6">Julio</option><option value="7">Agosto</option>
+              <option value="8">Septiembre</option><option value="9">Octubre</option>
+              <option value="10">Noviembre</option>
+            </select>
+          </div>
+          <div>
+            <label style="margin-top:0">Mes fin promedio</label>
+            <select id="gf-mes-fin" style="font-size:12px">
+              <option value="0">Enero</option><option value="1">Febrero</option>
+              <option value="2">Marzo</option><option value="3">Abril</option>
+              <option value="4">Mayo</option><option value="5">Junio</option>
+              <option value="6">Julio</option><option value="7" selected>Agosto</option>
+              <option value="8">Septiembre</option><option value="9">Octubre</option>
+              <option value="10">Noviembre</option><option value="11">Diciembre</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end">
+          <div>
+            <label style="margin-top:0">IPC proyectado (%)</label>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="number" id="gf-ipc" value="4.5" min="0" max="30" step="0.1" style="font-size:13px;width:80px">
+              <span style="font-size:13px;color:var(--text2)">%</span>
+            </div>
+          </div>
+          <div>
+            <label style="margin-top:0">Año presupuesto</label>
+            <input type="number" id="gf-anio" value="2026" min="2024" max="2035" style="font-size:13px">
+          </div>
+        </div>
+        <button class="btn btn-orange btn-full" style="margin-top:12px" onclick="recalcularGastosFijos()">
+          🔄 Recalcular promedios + IPC
+        </button>
+      </div>
+    </div>
+
+    <!-- Resumen del último cálculo -->
+    <div id="gf-calc-summary" style="margin-top:12px;padding:10px;background:var(--bg2);border-radius:var(--r);font-size:12px;color:var(--text2);display:none"></div>
+  </div>
+
+  <!-- TABLA DE RESULTADOS -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:1rem" id="gf-metrics"></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:14px;font-weight:700">Rubros por categoría y centro de costo</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="gf-filter" onchange="renderGFTabla()" style="font-size:12px;padding:5px 8px;width:auto">
+          <option value="">Todas las categorías</option>
+          <option>Arriendo Oficina</option>
+          <option>Administración Oficina</option>
+          <option>Servicio de Energía</option>
+          <option>Servicio Público - Acueducto</option>
+          <option>Servicio de Aseo</option>
+          <option>Servicio de Internet</option>
+          <option>Servicio Telefónico</option>
+        </select>
+        <button class="btn btn-sm" onclick="resetGastosFijos()" title="Volver a los datos base 2025 con IPC actual">↺ Restaurar</button>
+      </div>
+    </div>
+    <div id="gf-alert-empty" class="alert alert-orange" style="display:none">⚠️ No hay datos. Carga el Excel de soporte o usa "Restaurar" para cargar los datos base 2025.</div>
+    <div class="table-wrap" id="gf-table-wrap"></div>
+  </div>
+  <div class="sep"></div>
+  <button class="btn btn-success btn-full" onclick="marcarGFListos()">✓ Marcar gastos fijos como listos</button>
+</div>
+
+<!-- CONSOLIDADOR -->
+<div id="screen-consolidador" class="screen">
+  <div class="nav">
+    <button class="btn btn-sm" onclick="goHome()">← Volver</button>
+    <div class="nav-title">Vista consolidador</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-sm btn-primary" onclick="exportarExcel()">⬇ Exportar Excel completo</button>
+      <button class="btn btn-sm" onclick="abrirGestion()">⚙ Gestionar áreas</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:1rem" id="consol-metrics"></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem" id="consol-conf-metrics"></div>
+  <div class="card">
+    <div class="tabs" id="consol-tabs"></div>
+    <div id="consol-table"></div>
+  </div>
+  <div style="font-size:11px;color:var(--text2);margin-top:4px">💡 El Excel incluye todas las hojas: áreas, GASTOS FIJOS, NÓMINA, AUMENTOS y CONSOLIDADO TOTAL.</div>
+</div>
+
+<!-- CEO DASHBOARD -->
+<div id="screen-ceo" class="screen">
+  <div class="nav">
+    <button class="btn btn-sm" onclick="goHome()">← Volver</button>
+    <div class="nav-title" style="color:var(--blue-text)">📊 Dashboard CEO</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-sm btn-primary" onclick="exportarExcelCEO()">⬇ Exportar con decisiones</button>
+    </div>
+  </div>
+
+  <!-- KPIs row 1 -->
+  <div id="ceo-kpi-top" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:10px"></div>
+  <!-- KPIs row 2 -->
+  <div id="ceo-kpi-bot" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.25rem"></div>
+
+  <!-- Tabs -->
+  <div class="tabs" id="ceo-tabs" style="margin-bottom:0"></div>
+
+  <!-- Tab: Resumen -->
+  <div id="ceo-tab-resumen" class="ceo-tab-panel">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:1rem">
+      <div class="card" style="padding:1rem">
+        <div style="font-size:13px;font-weight:700;color:var(--blue-text);margin-bottom:10px">Gastos por clase</div>
+        <div id="ceo-por-clase"></div>
+      </div>
+      <div class="card" style="padding:1rem">
+        <div style="font-size:13px;font-weight:700;color:var(--blue-text);margin-bottom:10px">Distribución mensual por prioridad</div>
+        <div id="ceo-por-mes" style="overflow-x:auto"></div>
+      </div>
+    </div>
+    <div class="card" style="padding:1rem;margin-top:0">
+      <div style="font-size:13px;font-weight:700;color:var(--blue-text);margin-bottom:10px">Gastos vs Ingreso mensual</div>
+      <div style="overflow-x:auto">
+        <canvas id="ceo-chart" style="max-height:220px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Pendientes -->
+  <div id="ceo-tab-pendientes" class="ceo-tab-panel" style="display:none">
+    <div class="card" style="padding:1rem;margin-top:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px;font-weight:700;color:var(--amber-text)">⚠ Rubros pendientes de aprobación CEO</div>
+        <div style="font-size:12px;color:var(--text2)">Selecciona una decisión para cada rubro</div>
+      </div>
+      <div id="ceo-pendientes-list"></div>
+    </div>
+    <div class="card" style="padding:1rem;background:var(--amber-bg)">
+      <div style="font-size:13px;font-weight:700;color:var(--amber-text);margin-bottom:8px">Resumen de decisiones</div>
+      <div id="ceo-decision-summary"></div>
+    </div>
+  </div>
+
+  <!-- Tab: Todas las áreas -->
+  <div id="ceo-tab-areas" class="ceo-tab-panel" style="display:none">
+    <div class="card" style="padding:1rem;margin-top:1rem">
+      <div style="font-size:13px;font-weight:700;color:var(--blue-text);margin-bottom:10px">Todos los rubros por área</div>
+      <div class="tabs" id="ceo-area-tabs" style="margin-bottom:10px"></div>
+      <div id="ceo-areas-table" style="overflow-x:auto"></div>
+    </div>
+  </div>
+
+  <!-- Tab: Resumen aprobación -->
+  <div id="ceo-tab-aprobacion" class="ceo-tab-panel" style="display:none">
+    <div class="card" style="padding:1.25rem;margin-top:1rem;border-color:var(--blue)">
+      <div style="font-size:16px;font-weight:700;color:var(--blue-text);margin-bottom:1rem">Cuadro de aprobación presupuestal 2027</div>
+      <div id="ceo-aprobacion-table"></div>
+      <div style="margin-top:2rem;padding-top:1rem;border-top:0.5px solid var(--border)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:1rem">
+          <div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Revisado y aprobado por:</div>
+            <div style="font-size:14px;font-weight:700;color:var(--blue-text);margin-bottom:12px">CEO / Dirección Ejecutiva</div>
+            <div style="height:40px;border-bottom:1.5px solid var(--blue-text);margin-bottom:4px"></div>
+            <div style="font-size:11px;color:var(--text3)">Firma</div>
+          </div>
+          <div>
+            <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Fecha de aprobación:</div>
+            <input type="date" id="ceo-fecha-aprobacion" style="margin-top:4px;font-size:14px;width:auto">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- PIN -->
+<div id="screen-pin" class="screen">
+  <div style="max-width:340px;margin:3rem auto">
+    <div class="pin-card" id="pin-card">
+      <div style="font-size:36px;margin-bottom:12px" id="pin-icon">🔒</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:6px" id="pin-title">Acceso restringido</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:1.5rem" id="pin-subtitle">Ingresa el PIN para continuar</div>
+      <input type="password" id="pin-input" placeholder="PIN" style="text-align:center;letter-spacing:8px;font-size:22px;max-width:180px;margin:0 auto 1rem;display:block" onkeydown="if(event.key==='Enter')checkPin()">
+      <button class="btn btn-full" id="pin-btn" onclick="checkPin()" style="margin-bottom:8px">Ingresar</button>
+      <div id="pin-error" style="color:var(--red-text);font-size:12px;margin-top:6px;display:none">PIN incorrecto.</div>
+      <button class="btn btn-sm" style="margin-top:12px;width:100%;justify-content:center" onclick="goHome()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- GESTIÓN -->
+<div id="screen-gestion" class="screen">
+  <div class="nav">
+    <button class="btn btn-sm" onclick="showScreen('consolidador')">← Volver</button>
+    <div class="nav-title">Gestionar áreas</div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:1rem">Desbloquea áreas o limpia sus datos.</div>
+    <div id="gestion-list"></div>
+  </div>
+</div>
+
+<!-- MODAL RUBRO -->
+<div id="modal-rubro" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-rubro')">
+  <div class="modal">
+    <div class="modal-title">Agregar rubro</div>
+    <label>Descripción *</label><input type="text" id="m-desc" placeholder="Ej: Licencia Adobe Creative Cloud" maxlength="120">
+    <label>Cuenta / Clase *</label><select id="m-cuenta"></select>
+    <label>Cuenta auxiliar (opcional)</label><input type="text" id="m-cta-aux" placeholder="Código contable">
+    <label>Justificación *</label><textarea id="m-just" placeholder="¿Por qué es necesario? ¿Qué impacto tiene?"></textarea>
+    <label>Prioridad *</label>
+    <select id="m-prioridad">
+      <option value="Obligatorio">Obligatorio (legal / contractual)</option>
+      <option value="Aprobado">Aprobado (ya comprometido)</option>
+      <option value="Pendiente">Pendiente (por aprobar)</option>
+    </select>
+    <div class="sep" style="margin:.9rem 0"></div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">¿Cómo se ejecuta? *</div>
+    <div class="exec-selector">
+      <button class="exec-btn" onclick="setExecType('mensual')">🔁 Mensual</button>
+      <button class="exec-btn" onclick="setExecType('meses')">📅 Meses específicos</button>
+      <button class="exec-btn" onclick="setExecType('unico')">1️⃣ Un solo mes</button>
+    </div>
+    <div class="help-text" id="exec-help"></div>
+    <div id="row-mensual" style="display:none"><label>Valor mensual (COP) *</label><input type="text" id="m-valor-mensual" placeholder="Ej: 1500000" inputmode="numeric"></div>
+    <div id="row-meses" style="display:none">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Selecciona los meses:</div>
+      <div class="month-checks" id="month-checks-grid"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <input type="checkbox" id="m-mismo-valor" style="width:auto" onchange="toggleMismoValor()">
+        <label for="m-mismo-valor" style="margin:0;cursor:pointer;color:var(--text)">Mismo valor en todos los meses marcados</label>
+      </div>
+      <div id="row-valor-unico" style="display:none"><label>Valor por mes (COP) *</label><input type="text" id="m-valor-unico-meses" inputmode="numeric"></div>
+      <div id="row-valores-individuales" style="display:none"><div style="font-size:12px;color:var(--text2);margin-bottom:6px">Valor por mes:</div><div id="valores-individuales-list"></div></div>
+    </div>
+    <div id="row-unico" style="display:none">
+      <label>Mes *</label>
+      <select id="m-mes-unico"><option value="">Selecciona...</option><option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option></select>
+      <label>Valor (COP) *</label><input type="text" id="m-valor-unico" inputmode="numeric">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:1.25rem">
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="saveRubro()">Guardar</button>
+      <button class="btn" onclick="closeModal('modal-rubro')">Cancelar</button>
+    </div>
+    <div id="m-error" style="color:var(--red-text);font-size:12px;margin-top:6px;display:none"></div>
+  </div>
+</div>
+
+<!-- MODAL EMPLEADO -->
+<div id="modal-nomina" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-nomina')">
+  <div class="modal">
+    <div class="modal-title">Agregar empleado</div>
+    <label>Nombre *</label><input type="text" id="nm-nombre" placeholder="Ej: Juan Pérez">
+    <label>Cargo</label><input type="text" id="nm-cargo" placeholder="Ej: Desarrollador Senior">
+    <label>Área / Centro de costo *</label><input type="text" id="nm-area" placeholder="Ej: Desarrollo (CC: 421)">
+    <label>Tipo vinculación</label>
+    <select id="nm-tipo"><option>Empleado</option><option>Contratista</option><option>Aprendiz SENA</option></select>
+    <label>Salario básico (COP) *</label><input type="text" id="nm-salario" inputmode="numeric">
+    <label>Aux. transporte (COP)</label><input type="text" id="nm-transporte" placeholder="0" inputmode="numeric">
+    <label>Aux. alimentación (COP)</label><input type="text" id="nm-alimentacion" placeholder="0" inputmode="numeric">
+    <label>Costo total mensual incl. prestaciones y parafiscales (COP) *</label><input type="text" id="nm-costo-total" inputmode="numeric">
+    <div style="display:flex;gap:8px;margin-top:1.25rem">
+      <button class="btn btn-purple" style="flex:1;justify-content:center" onclick="saveEmpleado()">Guardar</button>
+      <button class="btn" onclick="closeModal('modal-nomina')">Cancelar</button>
+    </div>
+    <div id="nm-error" style="color:var(--red-text);font-size:12px;margin-top:6px;display:none"></div>
+  </div>
+</div>
+
+<!-- MODAL AUMENTO -->
+<div id="modal-aumento" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-aumento')">
+  <div class="modal">
+    <div class="modal-title">Agregar aumento</div>
+    <label>Nombre del empleado *</label><input type="text" id="au-nombre" placeholder="Ej: Juan Pérez">
+    <label>Área / Centro de costo *</label><input type="text" id="au-area" placeholder="Ej: Desarrollo (CC: 421)">
+    <label>Tipo de aumento *</label>
+    <select id="au-tipo">
+      <option>Aumento salarial legal (IPC)</option><option>Mérito / desempeño</option>
+      <option>Nueva vinculación</option><option>Cambio de cargo</option><option>Otro</option>
+    </select>
+    <label>Mes de vigencia * <span style="color:var(--text3);font-weight:400">(desde este mes hasta Dic se suma el monto)</span></label>
+    <select id="au-mes"><option value="">Selecciona...</option><option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option><option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option><option value="6">Julio</option><option value="7">Agosto</option><option value="8">Septiembre</option><option value="9">Octubre</option><option value="10">Noviembre</option><option value="11">Diciembre</option></select>
+    <label>Monto mensual del aumento (COP, incl. impacto en prestaciones) *</label><input type="text" id="au-monto" inputmode="numeric">
+    <label>Justificación</label><textarea id="au-just" style="min-height:50px"></textarea>
+    <div style="display:flex;gap:8px;margin-top:1.25rem">
+      <button class="btn btn-purple" style="flex:1;justify-content:center" onclick="saveAumento()">Guardar</button>
+      <button class="btn" onclick="closeModal('modal-aumento')">Cancelar</button>
+    </div>
+    <div id="au-error" style="color:var(--red-text);font-size:12px;margin-top:6px;display:none"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════ DATOS BASE ═══════════
+const AREAS=[
+  {id:'admin',      name:'Administrativo',           icon:'🏢',cc:'128'},
+  {id:'bienestar',  name:'Bienestar',                icon:'❤️',cc:'126-BN'},
+  {id:'bitakora',   name:'Bitákora',                 icon:'📖',cc:'BIT'},
+  {id:'ceo',        name:'CEO / Dir. ejecutiva',     icon:'💼',cc:'123'},
+  {id:'cosmos',     name:'Cosmos',                   icon:'🔬',cc:'951'},
+  {id:'desarrollo', name:'Desarrollo',               icon:'💻',cc:'421-591'},
+  {id:'financiero', name:'Financiero',               icon:'💰',cc:'129'},
+  {id:'formacion',  name:'Formación',                icon:'🎓',cc:'FORM'},
+  {id:'gentesoft',  name:'Gentesoft',                icon:'👥',cc:'126'},
+  {id:'infra',      name:'Infraestructura (IT)',     icon:'🖥️',cc:'483-484'},
+  {id:'inter',      name:'Internacionalización',     icon:'🌍',cc:'INT'},
+  {id:'juridico',   name:'Jurídico',                 icon:'⚖️',cc:'621'},
+  {id:'mercadeo',   name:'Mercadeo',                 icon:'📢',cc:'217'},
+  {id:'proyectos',  name:'Proyectos y servicios',    icon:'🗂️',cc:'313'},
+  {id:'sgc',        name:'Sistema de gestión',       icon:'📋',cc:'125'},
+  {id:'sst',        name:'SST',                      icon:'🦺',cc:'127'},
+];
+const MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES_FULL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const CLASES=['Administración','Arriendo','Aseo y cafetería','Bienestar','Capacitación','Comisiones','Combustibles','Contribuciones','Depreciación','Donación','Equipo de cómputo','Financieros','Gastos de viaje','Honorarios','Hosting','Impuestos','Legales','Licencias','Mantenimiento','Mercadeo','Nómina','Papelería','Provisión','SST','Seguro','Servicio Público','Servicios','Transporte','Otros'];
+const PINS={consolidador:'2026',nomina:'NOM2026',aumentos:'AUM2026',gastosfijos:'GF2026',ceo:'CEO2027'};
+const GASTOS_FIJOS_BASE=[{"clase": "Arriendo Oficina", "cuenta": "512010007", "nombre": "Arriendo Oficina", "cc": "123", "promedio": 28125794.0, "ppto2026": 29391454.0}, {"clase": "Arriendo Oficina", "cuenta": "512010007", "nombre": "Arriendo Oficina", "cc": "125", "promedio": 1537059.0, "ppto2026": 1606227.0}, {"clase": "Arriendo Oficina", "cuenta": "512010007", "nombre": "Arriendo Oficina", "cc": "126", "promedio": 6306819.0, "ppto2026": 6590626.0}, {"clase": "Arriendo Oficina", "cuenta": "512010007", "nombre": "Arriendo Oficina", "cc": "127", "promedio": 1796025.0, "ppto2026": 1876846.0}, {"clase": "Arriendo Oficina", "cuenta": "512010007", "nombre": "Arriendo Oficina", "cc": "128", "promedio": 3979182.0, "ppto2026": 4158245.0}, {"clase": "Arriendo Oficina", "cuenta": "512010007", "nombre": "Arriendo Oficina", "cc": "129", "promedio": 4759151.0, "ppto2026": 4973313.0}, {"clase": "Arriendo Oficina", "cuenta": "512010007", "nombre": "Arriendo Oficina", "cc": "802", "promedio": 26166.0, "ppto2026": 27343.0}, {"clase": "Arriendo Oficina", "cuenta": "522010", "nombre": "Arriendo Oficina", "cc": "213", "promedio": 1057589.0, "ppto2026": 1105181.0}, {"clase": "Arriendo Oficina", "cuenta": "522010", "nombre": "Arriendo Oficina", "cc": "215", "promedio": 2652498.0, "ppto2026": 2771861.0}, {"clase": "Arriendo Oficina", "cuenta": "522010", "nombre": "Arriendo Oficina", "cc": "217", "promedio": 8570800.0, "ppto2026": 8956486.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "313", "promedio": 6137765.0, "ppto2026": 6413964.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "421", "promedio": 10063319.0, "ppto2026": 10516169.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "431", "promedio": 9787249.0, "ppto2026": 10227676.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "432", "promedio": 3222538.0, "ppto2026": 3367552.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "441", "promedio": 8545639.0, "ppto2026": 8930193.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "442", "promedio": 2065407.0, "ppto2026": 2158350.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "451", "promedio": 10029561.0, "ppto2026": 10480891.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "452", "promedio": 3172767.0, "ppto2026": 3315542.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "483", "promedio": 2567909.0, "ppto2026": 2683465.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "484", "promedio": 9526645.0, "ppto2026": 9955344.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "485", "promedio": 643478.0, "ppto2026": 672434.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "491", "promedio": 4450667.0, "ppto2026": 4650947.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "492", "promedio": 528795.0, "ppto2026": 552590.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "521", "promedio": 6420582.0, "ppto2026": 6709508.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "561", "promedio": 566699.0, "ppto2026": 592200.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "591", "promedio": 6913360.0, "ppto2026": 7224462.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "621", "promedio": 1796700.0, "ppto2026": 1877552.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "631", "promedio": 808733.0, "ppto2026": 845126.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "701", "promedio": 7038898.0, "ppto2026": 7355649.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "702", "promedio": 6354322.0, "ppto2026": 6640267.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "801", "promedio": 398113.0, "ppto2026": 416028.0}, {"clase": "Arriendo Oficina", "cuenta": "522010", "nombre": "Arriendo Oficina", "cc": "803", "promedio": 1021270.0, "ppto2026": 1067227.0}, {"clase": "Arriendo Oficina", "cuenta": "742010", "nombre": "Arriendo Oficina", "cc": "951", "promedio": 1352328.0, "ppto2026": 1413183.0}, {"clase": "Administración Oficina", "cuenta": "51359506", "nombre": "Administración Oficina", "cc": "123", "promedio": 9320909.0, "ppto2026": 9740350.0}, {"clase": "Administración Oficina", "cuenta": "51359506", "nombre": "Administración Oficina", "cc": "125", "promedio": 185433.0, "ppto2026": 193778.0}, {"clase": "Administración Oficina", "cuenta": "51359506", "nombre": "Administración Oficina", "cc": "126", "promedio": 761451.0, "ppto2026": 795716.0}, {"clase": "Administración Oficina", "cuenta": "51359506", "nombre": "Administración Oficina", "cc": "127", "promedio": 217846.0, "ppto2026": 227649.0}, {"clase": "Administración Oficina", "cuenta": "51359506", "nombre": "Administración Oficina", "cc": "128", "promedio": 481345.0, "ppto2026": 503006.0}, {"clase": "Administración Oficina", "cuenta": "51359506", "nombre": "Administración Oficina", "cc": "129", "promedio": 576133.0, "ppto2026": 602059.0}, {"clase": "Administración Oficina", "cuenta": "52359506", "nombre": "Administración Oficina", "cc": "213", "promedio": 128030.0, "ppto2026": 133791.0}, {"clase": "Administración Oficina", "cuenta": "52359506", "nombre": "Administración Oficina", "cc": "215", "promedio": 321141.0, "ppto2026": 335592.0}, {"clase": "Administración Oficina", "cuenta": "52359506", "nombre": "Administración Oficina", "cc": "217", "promedio": 1036717.0, "ppto2026": 1083369.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "313", "promedio": 742590.0, "ppto2026": 776007.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "421", "promedio": 1220587.0, "ppto2026": 1275513.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "431", "promedio": 1185508.0, "ppto2026": 1238856.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "432", "promedio": 389839.0, "ppto2026": 407382.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "441", "promedio": 1030961.0, "ppto2026": 1077354.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "442", "promedio": 250308.0, "ppto2026": 261572.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "451", "promedio": 1214076.0, "ppto2026": 1268709.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "452", "promedio": 384089.0, "ppto2026": 401373.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "483", "promedio": 310062.0, "ppto2026": 324014.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "484", "promedio": 608500.0, "ppto2026": 635883.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "485", "promedio": 77537.0, "ppto2026": 81026.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "491", "promedio": 539116.0, "ppto2026": 563376.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "492", "promedio": 64015.0, "ppto2026": 66895.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "521", "promedio": 777369.0, "ppto2026": 812351.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "561", "promedio": 69037.0, "ppto2026": 72144.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "591", "promedio": 836898.0, "ppto2026": 874558.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "621", "promedio": 217013.0, "ppto2026": 226779.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "631", "promedio": 99215.0, "ppto2026": 103679.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "701", "promedio": 852221.0, "ppto2026": 890571.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "702", "promedio": 768610.0, "ppto2026": 768610.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "801", "promedio": 48571.0, "ppto2026": 50757.0}, {"clase": "Administración Oficina", "cuenta": "51359506", "nombre": "Administración Oficina", "cc": "802", "promedio": 3132.0, "ppto2026": 3273.0}, {"clase": "Administración Oficina", "cuenta": "52359506", "nombre": "Administración Oficina", "cc": "803", "promedio": 123897.0, "ppto2026": 129473.0}, {"clase": "Administración Oficina", "cuenta": "74359506", "nombre": "Administración Oficina", "cc": "951", "promedio": 161185.0, "ppto2026": 168439.0}, {"clase": "Servicio de Energía", "cuenta": "51353001", "nombre": "Servicio de Energia", "cc": "123", "promedio": 337301.0, "ppto2026": 352480.0}, {"clase": "Servicio de Energía", "cuenta": "51353001", "nombre": "Servicio de Energia", "cc": "125", "promedio": 69813.0, "ppto2026": 72955.0}, {"clase": "Servicio de Energía", "cuenta": "51353001", "nombre": "Servicio de Energia", "cc": "126", "promedio": 285093.0, "ppto2026": 297922.0}, {"clase": "Servicio de Energía", "cuenta": "51353001", "nombre": "Servicio de Energia", "cc": "127", "promedio": 82673.0, "ppto2026": 86393.0}, {"clase": "Servicio de Energía", "cuenta": "51353001", "nombre": "Servicio de Energia", "cc": "128", "promedio": 180913.0, "ppto2026": 189054.0}, {"clase": "Servicio de Energía", "cuenta": "51353001", "nombre": "Servicio de Energia", "cc": "129", "promedio": 217185.0, "ppto2026": 226958.0}, {"clase": "Servicio de Energía", "cuenta": "51353001", "nombre": "Servicio de Energia", "cc": "802", "promedio": 1286.0, "ppto2026": 1344.0}, {"clase": "Servicio de Energía", "cuenta": "513530", "nombre": "SERVICIO DE ENERGIA", "cc": "123", "promedio": 590449.0, "ppto2026": 617020.0}, {"clase": "Servicio de Energía", "cuenta": "513530", "nombre": "SERVICIO DE ENERGIA", "cc": "125", "promedio": 72697.0, "ppto2026": 75968.0}, {"clase": "Servicio de Energía", "cuenta": "513530", "nombre": "SERVICIO DE ENERGIA", "cc": "126", "promedio": 296917.0, "ppto2026": 310278.0}, {"clase": "Servicio de Energía", "cuenta": "513530", "nombre": "SERVICIO DE ENERGIA", "cc": "127", "promedio": 86057.0, "ppto2026": 89929.0}, {"clase": "Servicio de Energía", "cuenta": "513530", "nombre": "SERVICIO DE ENERGIA", "cc": "128", "promedio": 188404.0, "ppto2026": 196883.0}, {"clase": "Servicio de Energía", "cuenta": "513530", "nombre": "SERVICIO DE ENERGIA", "cc": "129", "promedio": 232239.0, "ppto2026": 242690.0}, {"clase": "Servicio de Energía", "cuenta": "523530", "nombre": "Servicio de Energia", "cc": "213", "promedio": 48263.0, "ppto2026": 50435.0}, {"clase": "Servicio de Energía", "cuenta": "523530", "nombre": "Servicio de Energia", "cc": "215", "promedio": 121084.0, "ppto2026": 126533.0}, {"clase": "Servicio de Energía", "cuenta": "523530", "nombre": "Servicio de Energia", "cc": "217", "promedio": 390088.0, "ppto2026": 407642.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "313", "promedio": 280593.0, "ppto2026": 293220.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "421", "promedio": 460626.0, "ppto2026": 481355.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "431", "promedio": 447413.0, "ppto2026": 467546.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "432", "promedio": 147038.0, "ppto2026": 153655.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "441", "promedio": 387859.0, "ppto2026": 405313.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "442", "promedio": 94278.0, "ppto2026": 98521.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "451", "promedio": 457592.0, "ppto2026": 478183.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "452", "promedio": 144790.0, "ppto2026": 151305.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "483", "promedio": 532333.0, "ppto2026": 556288.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "484", "promedio": 1901801.0, "ppto2026": 1987382.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "485", "promedio": 29170.0, "ppto2026": 30483.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "491", "promedio": 203776.0, "ppto2026": 212946.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "492", "promedio": 24131.0, "ppto2026": 25217.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "521", "promedio": 293114.0, "ppto2026": 306304.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "561", "promedio": 26013.0, "ppto2026": 27183.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "591", "promedio": 315452.0, "ppto2026": 329648.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "621", "promedio": 82268.0, "ppto2026": 85971.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "631", "promedio": 37453.0, "ppto2026": 39138.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "701", "promedio": 321587.0, "ppto2026": 336058.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "702", "promedio": 289055.0, "ppto2026": 302062.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "801", "promedio": 17911.0, "ppto2026": 18717.0}, {"clase": "Servicio de Energía", "cuenta": "513530", "nombre": "SERVICIO DE ENERGIA", "cc": "802", "promedio": 1331.0, "ppto2026": 1391.0}, {"clase": "Servicio de Energía", "cuenta": "523530", "nombre": "Servicio de Energia", "cc": "803", "promedio": 46684.0, "ppto2026": 48784.0}, {"clase": "Servicio de Energía", "cuenta": "743530", "nombre": "Servicio de Energia", "cc": "951", "promedio": 59970.0, "ppto2026": 62668.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "51352501", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "123", "promedio": 130315.0, "ppto2026": 136179.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "51352501", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "125", "promedio": 1138.0, "ppto2026": 1189.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "51352501", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "126", "promedio": 4899.0, "ppto2026": 5120.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "51352501", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "127", "promedio": 1430.0, "ppto2026": 1494.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "51352501", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "128", "promedio": 3027.0, "ppto2026": 3163.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "51352501", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "129", "promedio": 3728.0, "ppto2026": 3896.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "513525", "nombre": "SERVICIO DE ACUEDUCTO Y ALCANTARILADO", "cc": "123", "promedio": 130315.0, "ppto2026": 136179.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "513525", "nombre": "SERVICIO DE ACUEDUCTO Y ALCANTARILADO", "cc": "125", "promedio": 1138.0, "ppto2026": 1189.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "513525", "nombre": "SERVICIO DE ACUEDUCTO Y ALCANTARILADO", "cc": "126", "promedio": 4899.0, "ppto2026": 5120.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "513525", "nombre": "SERVICIO DE ACUEDUCTO Y ALCANTARILADO", "cc": "127", "promedio": 1430.0, "ppto2026": 1494.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "513525", "nombre": "SERVICIO DE ACUEDUCTO Y ALCANTARILADO", "cc": "128", "promedio": 3027.0, "ppto2026": 3163.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "513525", "nombre": "SERVICIO DE ACUEDUCTO Y ALCANTARILADO", "cc": "129", "promedio": 3728.0, "ppto2026": 3896.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "523525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "213", "promedio": 828.0, "ppto2026": 866.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "523525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "215", "promedio": 2080.0, "ppto2026": 2173.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "523525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "217", "promedio": 6668.0, "ppto2026": 6968.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "313", "promedio": 4800.0, "ppto2026": 5016.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "421", "promedio": 8011.0, "ppto2026": 8371.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "431", "promedio": 7620.0, "ppto2026": 7963.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "432", "promedio": 2573.0, "ppto2026": 2689.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "441", "promedio": 6878.0, "ppto2026": 7187.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "442", "promedio": 1569.0, "ppto2026": 1640.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "451", "promedio": 7871.0, "ppto2026": 8225.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "452", "promedio": 2485.0, "ppto2026": 2597.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "483", "promedio": 2002.0, "ppto2026": 2093.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "484", "promedio": 3819.0, "ppto2026": 3991.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "485", "promedio": 500.0, "ppto2026": 522.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "491", "promedio": 3554.0, "ppto2026": 3713.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "492", "promedio": 414.0, "ppto2026": 433.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "521", "promedio": 5044.0, "ppto2026": 5271.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "561", "promedio": 555.0, "ppto2026": 580.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "591", "promedio": 5486.0, "ppto2026": 5732.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "621", "promedio": 1411.0, "ppto2026": 1474.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "631", "promedio": 724.0, "ppto2026": 756.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "701", "promedio": 5524.0, "ppto2026": 5773.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "702", "promedio": 4988.0, "ppto2026": 5213.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "801", "promedio": 363.0, "ppto2026": 379.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "523525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "803", "promedio": 737.0, "ppto2026": 770.0}, {"clase": "Servicio Público - Acueducto", "cuenta": "743525", "nombre": "Servicio de Acueducto y Alcantarillado", "cc": "951", "promedio": 837.0, "ppto2026": 875.0}, {"clase": "Servicio de Aseo", "cuenta": "51353002", "nombre": "Servicio de Aseo", "cc": "123", "promedio": 253148.0, "ppto2026": 264540.0}, {"clase": "Servicio de Aseo", "cuenta": "51353002", "nombre": "Servicio de Aseo", "cc": "125", "promedio": 2884.0, "ppto2026": 3014.0}, {"clase": "Servicio de Aseo", "cuenta": "51353002", "nombre": "Servicio de Aseo", "cc": "126", "promedio": 11824.0, "ppto2026": 12356.0}, {"clase": "Servicio de Aseo", "cuenta": "51353002", "nombre": "Servicio de Aseo", "cc": "127", "promedio": 3384.0, "ppto2026": 3536.0}, {"clase": "Servicio de Aseo", "cuenta": "51353002", "nombre": "Servicio de Aseo", "cc": "128", "promedio": 7492.0, "ppto2026": 7829.0}, {"clase": "Servicio de Aseo", "cuenta": "51353002", "nombre": "Servicio de Aseo", "cc": "129", "promedio": 15054.0, "ppto2026": 15732.0}, {"clase": "Servicio de Aseo", "cuenta": "523531", "nombre": "Servicio de Aseo", "cc": "213", "promedio": 1991.0, "ppto2026": 2081.0}, {"clase": "Servicio de Aseo", "cuenta": "523531", "nombre": "Servicio de Aseo", "cc": "215", "promedio": 4995.0, "ppto2026": 5219.0}, {"clase": "Servicio de Aseo", "cuenta": "523531", "nombre": "Servicio de Aseo", "cc": "217", "promedio": 16124.0, "ppto2026": 16849.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "313", "promedio": 11548.0, "ppto2026": 12068.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "421", "promedio": 19002.0, "ppto2026": 19857.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "431", "promedio": 18437.0, "ppto2026": 19267.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "432", "promedio": 6068.0, "ppto2026": 6341.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "441", "promedio": 16045.0, "ppto2026": 16767.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "442", "promedio": 3888.0, "ppto2026": 4062.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "451", "promedio": 18887.0, "ppto2026": 19737.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "452", "promedio": 5973.0, "ppto2026": 6242.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "483", "promedio": 17002.0, "ppto2026": 17767.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "484", "promedio": 84275.0, "ppto2026": 88067.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "485", "promedio": 1208.0, "ppto2026": 1263.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "491", "promedio": 8391.0, "ppto2026": 8768.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "492", "promedio": 996.0, "ppto2026": 1041.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "521", "promedio": 12093.0, "ppto2026": 12637.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "561", "promedio": 1085.0, "ppto2026": 1134.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "591", "promedio": 13024.0, "ppto2026": 13610.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "621", "promedio": 3374.0, "ppto2026": 3526.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "631", "promedio": 1559.0, "ppto2026": 1629.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "701", "promedio": 13264.0, "ppto2026": 13861.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "702", "promedio": 11954.0, "ppto2026": 12492.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "801", "promedio": 757.0, "ppto2026": 791.0}, {"clase": "Servicio de Aseo", "cuenta": "523531", "nombre": "Servicio de Aseo", "cc": "803", "promedio": 1920.0, "ppto2026": 2006.0}, {"clase": "Servicio de Aseo", "cuenta": "743531", "nombre": "Servicio de Aseo", "cc": "951", "promedio": 2484.0, "ppto2026": 2596.0}, {"clase": "Servicio de Internet", "cuenta": "51354501", "nombre": "Servicio de Internet", "cc": "123", "promedio": 91831.0, "ppto2026": 95963.0}, {"clase": "Servicio de Internet", "cuenta": "51354501", "nombre": "Servicio de Internet", "cc": "125", "promedio": 51624.0, "ppto2026": 53947.0}, {"clase": "Servicio de Internet", "cuenta": "51354501", "nombre": "Servicio de Internet", "cc": "126", "promedio": 212093.0, "ppto2026": 221637.0}, {"clase": "Servicio de Internet", "cuenta": "51354501", "nombre": "Servicio de Internet", "cc": "127", "promedio": 64288.0, "ppto2026": 67180.0}, {"clase": "Servicio de Internet", "cuenta": "51354501", "nombre": "Servicio de Internet", "cc": "128", "promedio": 315719.0, "ppto2026": 329926.0}, {"clase": "Servicio de Internet", "cuenta": "51354501", "nombre": "Servicio de Internet", "cc": "129", "promedio": 165296.0, "ppto2026": 172735.0}, {"clase": "Servicio de Internet", "cuenta": "51354501", "nombre": "Servicio de Internet", "cc": "802", "promedio": 3909.0, "ppto2026": 4085.0}, {"clase": "Servicio de Internet", "cuenta": "513545", "nombre": "SERVICIO DE INTERNET", "cc": "123", "promedio": 91831.0, "ppto2026": 95963.0}, {"clase": "Servicio de Internet", "cuenta": "513545", "nombre": "SERVICIO DE INTERNET", "cc": "125", "promedio": 51624.0, "ppto2026": 53947.0}, {"clase": "Servicio de Internet", "cuenta": "513545", "nombre": "SERVICIO DE INTERNET", "cc": "126", "promedio": 212093.0, "ppto2026": 221637.0}, {"clase": "Servicio de Internet", "cuenta": "513545", "nombre": "SERVICIO DE INTERNET", "cc": "127", "promedio": 64288.0, "ppto2026": 67180.0}, {"clase": "Servicio de Internet", "cuenta": "513545", "nombre": "SERVICIO DE INTERNET", "cc": "128", "promedio": 315719.0, "ppto2026": 329926.0}, {"clase": "Servicio de Internet", "cuenta": "513545", "nombre": "SERVICIO DE INTERNET", "cc": "129", "promedio": 165296.0, "ppto2026": 172735.0}, {"clase": "Servicio de Internet", "cuenta": "523545", "nombre": "Servicio de Internet", "cc": "213", "promedio": 36733.0, "ppto2026": 38386.0}, {"clase": "Servicio de Internet", "cuenta": "523545", "nombre": "Servicio de Internet", "cc": "215", "promedio": 92930.0, "ppto2026": 97112.0}, {"clase": "Servicio de Internet", "cuenta": "523545", "nombre": "Servicio de Internet", "cc": "217", "promedio": 294444.0, "ppto2026": 307694.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "313", "promedio": 212350.0, "ppto2026": 221906.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "421", "promedio": 373513.0, "ppto2026": 390321.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "431", "promedio": 347371.0, "ppto2026": 363003.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "432", "promedio": 113580.0, "ppto2026": 118691.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "441", "promedio": 319877.0, "ppto2026": 334271.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "442", "promedio": 70083.0, "ppto2026": 73237.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "451", "promedio": 365605.0, "ppto2026": 382057.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "452", "promedio": 110197.0, "ppto2026": 115156.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "483", "promedio": 130982.0, "ppto2026": 136876.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "484", "promedio": 4025399.0, "ppto2026": 4206542.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "485", "promedio": 64282.0, "ppto2026": 67175.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "491", "promedio": 170152.0, "ppto2026": 177809.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "492", "promedio": 18366.0, "ppto2026": 19192.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "521", "promedio": 228529.0, "ppto2026": 238813.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "561", "promedio": 25036.0, "ppto2026": 26163.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "591", "promedio": 249571.0, "ppto2026": 260802.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "621", "promedio": 63650.0, "ppto2026": 66514.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "631", "promedio": 51952.0, "ppto2026": 54290.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "701", "promedio": 280767.0, "ppto2026": 293402.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "702", "promedio": 225383.0, "ppto2026": 235525.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "801", "promedio": 16341.0, "ppto2026": 17076.0}, {"clase": "Servicio de Internet", "cuenta": "513545", "nombre": "SERVICIO DE INTERNET", "cc": "802", "promedio": 3909.0, "ppto2026": 4085.0}, {"clase": "Servicio de Internet", "cuenta": "523545", "nombre": "Servicio de Internet", "cc": "803", "promedio": 39036.0, "ppto2026": 40793.0}, {"clase": "Servicio de Internet", "cuenta": "743545", "nombre": "Servicio de Internet", "cc": "951", "promedio": 101970.0, "ppto2026": 106558.0}, {"clase": "Servicio Telefónico", "cuenta": "51353501", "nombre": "Servicio Telefonico", "cc": "123", "promedio": 126131.0, "ppto2026": 131807.0}, {"clase": "Servicio Telefónico", "cuenta": "51353501", "nombre": "Servicio Telefonico", "cc": "125", "promedio": 1503.0, "ppto2026": 1571.0}, {"clase": "Servicio Telefónico", "cuenta": "51353501", "nombre": "Servicio Telefonico", "cc": "126", "promedio": 43673.0, "ppto2026": 45638.0}, {"clase": "Servicio Telefónico", "cuenta": "51353501", "nombre": "Servicio Telefonico", "cc": "127", "promedio": 27546.0, "ppto2026": 28785.0}, {"clase": "Servicio Telefónico", "cuenta": "51353501", "nombre": "Servicio Telefonico", "cc": "128", "promedio": 48470.0, "ppto2026": 50652.0}, {"clase": "Servicio Telefónico", "cuenta": "51353501", "nombre": "Servicio Telefonico", "cc": "129", "promedio": 56043.0, "ppto2026": 58565.0}, {"clase": "Servicio Telefónico", "cuenta": "513535", "nombre": "SERVICIO TELEFONICO", "cc": "123", "promedio": 126131.0, "ppto2026": 131807.0}, {"clase": "Servicio Telefónico", "cuenta": "513535", "nombre": "SERVICIO TELEFONICO", "cc": "125", "promedio": 1503.0, "ppto2026": 1571.0}, {"clase": "Servicio Telefónico", "cuenta": "513535", "nombre": "SERVICIO TELEFONICO", "cc": "126", "promedio": 43673.0, "ppto2026": 45638.0}, {"clase": "Servicio Telefónico", "cuenta": "513535", "nombre": "SERVICIO TELEFONICO", "cc": "127", "promedio": 27546.0, "ppto2026": 28785.0}, {"clase": "Servicio Telefónico", "cuenta": "513535", "nombre": "SERVICIO TELEFONICO", "cc": "128", "promedio": 48470.0, "ppto2026": 50652.0}, {"clase": "Servicio Telefónico", "cuenta": "513535", "nombre": "SERVICIO TELEFONICO", "cc": "129", "promedio": 56043.0, "ppto2026": 58565.0}, {"clase": "Servicio Telefónico", "cuenta": "523535", "nombre": "Telefono", "cc": "213", "promedio": 1503.0, "ppto2026": 1571.0}, {"clase": "Servicio Telefónico", "cuenta": "523535", "nombre": "Telefono", "cc": "215", "promedio": 16277.0, "ppto2026": 17010.0}, {"clase": "Servicio Telefónico", "cuenta": "523535", "nombre": "Telefono", "cc": "217", "promedio": 97261.0, "ppto2026": 101638.0}, {"clase": "Servicio Telefónico", "cuenta": "523535", "nombre": "Telefono", "cc": "803", "promedio": 1503.0, "ppto2026": 1571.0}];
+
+// ═══════════ STORAGE ═══════════
+function getD(k){try{return JSON.parse(localStorage.getItem('ppto26_'+k)||'null')}catch(e){return null}}
+function setD(k,v){try{localStorage.setItem('ppto26_'+k,JSON.stringify(v))}catch(e){}}
+function getAreaData(id){return getD(id)||{rubros:[],listo:false}}
+function setAreaData(id,d){setD(id,d)}
+function getNominaData(){return getD('_nomina')||{empleados:[],listo:false}}
+function setNominaData(d){setD('_nomina',d)}
+function getAumentosData(){return getD('_aumentos')||{aumentos:[],listo:false}}
+function setAumentosData(d){setD('_aumentos',d)}
+function getGFData(){
+  const saved=getD("_gastosfijos");
+  if(saved) return saved;
+  return {rubros:GASTOS_FIJOS_BASE.map(g=>({...g,meses:Array(12).fill(Math.round(g.ppto2026))})),listo:false,ipc:4.5,anio:2026,mesInicio:0,mesFin:7,fuente:"base"};
+}
+function setGFData(d){setD('_gastosfijos',d)}
+
+// ═══════════ HELPERS ═══════════
+function parseCOP(s){return Number(String(s||'').replace(/[^0-9.-]/g,''))||0}
+function numFmt(n){if(!n||isNaN(n))return '—';return '$'+Math.round(Number(n)).toLocaleString('es-CO')}
+function numK(n){const v=Math.round(Number(n)||0);if(v===0)return '';return '$'+Math.round(v/1000).toLocaleString('es-CO')+'K'}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active')}
+function goHome(){try{const saved=getD('_ceo_dec');if(saved)ceoDecisiones=saved;}catch(e){}
+if(!checkSessionLogin()){
+  // Show login, focus input
+  setTimeout(()=>{ try{document.getElementById('login-pin').focus();}catch(e){} },100);
+} else {
+  updateHomeStatus();renderHome();
+}showScreen('home')}
+function closeModal(id){document.getElementById(id).style.display='none'}
+
+function updateHomeStatus(){
+  const nd=getNominaData();const ad=getAumentosData();const gfd=getGFData();
+  document.getElementById('nom-home-status').innerHTML=nd.listo?'<span class="badge badge-ok">✓ Lista</span>':`<span class="badge badge-purple">🔒 Confidencial · ${(nd.filas||[]).length} registros</span>`;
+  document.getElementById('aum-home-status').innerHTML=ad.listo?'<span class="badge badge-ok">✓ Listos</span>':`<span class="badge badge-purple">🔒 Confidencial · ${(ad.filas||[]).length} registros</span>`;
+  document.getElementById('gf-home-status').innerHTML=gfd.listo?'<span class="badge badge-ok">✓ Listos</span>':'<span class="badge badge-orange">🔒 Restringido</span>';
+}
+
+// ═══════════ PIN ═══════════
+let pinTarget=null;
+const PIN_CFG={
+  consolidador:{icon:'🔒',title:'Vista consolidador',    sub:'PIN del consolidador',    btnCls:'btn-primary',card:'',dest:'consolidador',onSuccess:renderConsolidador},
+  nomina:      {icon:'👤',title:'Nómina 2026',           sub:'Módulo confidencial',     btnCls:'btn-purple',card:'purple-theme',dest:'nomina',onSuccess:renderNomina},
+  aumentos:    {icon:'📈',title:'Aumentos 2026',         sub:'Módulo confidencial',     btnCls:'btn-purple',card:'purple-theme',dest:'aumentos',onSuccess:renderAumentos},
+  gastosfijos: {icon:'🏛️',title:'Gastos fijos 2026',    sub:'Servicios públicos · Arriendos · Administración',btnCls:'btn-orange',card:'',dest:'gastosfijos',onSuccess:renderGastosFijos},
+  ceo:         {icon:'📊',title:'Dashboard CEO 2027',   sub:'Acceso exclusivo dirección ejecutiva',           btnCls:'btn-primary',card:'',dest:'ceo',onSuccess:renderCEO},
+};
+function goPin(t){
+  pinTarget=t;const c=PIN_CFG[t];
+  document.getElementById('pin-icon').textContent=c.icon;
+  document.getElementById('pin-title').textContent=c.title;
+  document.getElementById('pin-subtitle').textContent=c.sub;
+  document.getElementById('pin-btn').className='btn btn-full '+c.btnCls;
+  document.getElementById('pin-card').className='pin-card '+(c.card||'');
+  document.getElementById('pin-input').value='';
+  document.getElementById('pin-error').style.display='none';
+  showScreen('pin');
+  setTimeout(()=>document.getElementById('pin-input').focus(),150);
+}
+function checkPin(){
+  if(document.getElementById('pin-input').value===PINS[pinTarget]){
+    PIN_CFG[pinTarget].onSuccess();showScreen(PIN_CFG[pinTarget].dest);
+  } else {
+    document.getElementById('pin-error').style.display='block';
+    document.getElementById('pin-input').value='';
+    document.getElementById('pin-input').focus();
+  }
+}
+
+// ═══════════ HOME ═══════════
+function renderHome(){
+  const listas=AREAS.filter(a=>getAreaData(a.id).listo).length;
+  document.getElementById('home-progress-txt').textContent=listas+' de '+AREAS.length+' áreas listas';
+  document.getElementById('home-progress-fill').style.width=Math.round(listas/AREAS.length*100)+'%';
+  document.getElementById('area-grid').innerHTML=AREAS.map(a=>{
+    const d=getAreaData(a.id);
+    const total=d.rubros.reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+    const badge=d.listo?'<span class="badge badge-lock">Bloqueada</span>':d.rubros.length>0?'<span class="badge badge-pend">En progreso</span>':'<span class="badge badge-empty">Sin datos</span>';
+    const click=d.listo?`alert('Área bloqueada. El consolidador debe desbloquearla.')`:(`openArea('${a.id}')`);
+    return `<div class="area-card${d.listo?' locked':''}" onclick="${click}">
+      <div class="area-icon">${a.icon}</div>
+      <div class="area-name">${a.name}</div>
+      <div class="area-cc">CC: ${a.cc}</div>
+      <div class="area-total">${total>0?'$'+Math.round(total/1e6).toLocaleString('es-CO')+'M':'$0'}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between">${badge}<span style="font-size:10px;color:var(--text3)">${d.rubros.length} rubros</span></div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════ AREA ═══════════
+let currentArea=null,execType=null,checkedMonths=new Set();
+function openArea(id){
+  currentArea=id;const a=AREAS.find(x=>x.id===id);
+  document.getElementById('area-title').textContent=a.name;
+  document.getElementById('area-subtitle').textContent='CC: '+a.cc;
+  renderAreaScreen();showScreen('area');
+}
+function renderAreaScreen(){
+  const d=getAreaData(currentArea);
+  const total=d.rubros.reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const badge=document.getElementById('area-badge');
+  if(d.listo){badge.textContent='Bloqueada';badge.className='badge badge-lock';document.getElementById('lock-alert').style.display='block';document.getElementById('btn-add-rubro').style.display='none';document.getElementById('btn-marcar-lista').style.display='none'}
+  else{badge.textContent=d.rubros.length>0?'En progreso':'Sin datos';badge.className='badge '+(d.rubros.length>0?'badge-pend':'badge-empty');document.getElementById('lock-alert').style.display='none';document.getElementById('btn-add-rubro').style.display='inline-flex';document.getElementById('btn-marcar-lista').style.display='flex'}
+  document.getElementById('area-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Rubros</div><div class="metric-value">${d.rubros.length}</div></div>
+    <div class="metric"><div class="metric-label">Total anual</div><div class="metric-value" style="font-size:16px">$${Math.round(total/1e6).toLocaleString('es-CO')}M</div></div>
+    <div class="metric"><div class="metric-label">Obligatorios</div><div class="metric-value">${d.rubros.filter(r=>r.prioridad==='Obligatorio').length}</div></div>
+    <div class="metric"><div class="metric-label">Pendientes</div><div class="metric-value">${d.rubros.filter(r=>r.prioridad==='Pendiente').length}</div></div>`;
+  renderRubros();
+}
+function renderRubros(){
+  const d=getAreaData(currentArea);
+  const list=document.getElementById('rubros-list');
+  const empty=document.getElementById('empty-state');
+  if(!d.rubros.length){list.innerHTML='';empty.style.display='block';return}
+  empty.style.display='none';
+  const locked=d.listo;
+  list.innerHTML=d.rubros.map((r,i)=>{
+    const total=r.meses.reduce((s,v)=>s+(Number(v)||0),0);
+    const pb=r.prioridad==='Obligatorio'?'badge-ok':r.prioridad==='Aprobado'?'badge-blue':'badge-pend';
+    const execLbl=r.execType==='mensual'?'🔁 Mensual':r.execType==='unico'?'1️⃣ Un mes':('📅 '+r.meses.map((v,mi)=>v>0?MESES[mi]:'').filter(Boolean).join(', '));
+    let mHtml='';
+    for(let row=0;row<2;row++){
+      const lbls=MESES.slice(row*6,(row+1)*6).map(m=>`<span>${m}</span>`).join('');
+      let inputs='';
+      for(let mi=row*6;mi<(row+1)*6;mi++){
+        const v=r.meses[mi]||0;const active=v>0;
+        if(locked){inputs+=`<div style="text-align:right;font-size:12px;padding:4px 5px;border-radius:var(--r);background:${active?'var(--blue-bg)':'var(--bg3)'};color:${active?'var(--blue-text)':'var(--text3)'}">${active?'$'+Math.round(v/1000)+'K':''}</div>`;}
+        else{inputs+=`<input type="text" value="${active?Math.round(v):''}" placeholder="—" inputmode="numeric" style="${active?'border-color:var(--blue);':'background:var(--bg3);'}" onchange="updateMes(${i},${mi},this.value)" onfocus="this.select()">`;}
+      }
+      mHtml+=`<div class="month-labels">${lbls}</div><div class="month-inputs-grid">${inputs}</div>`;
+    }
+    return `<div class="rubro-item">
+      <div class="rubro-header">
+        <div style="flex:1">
+          <div class="rubro-desc">${r.descripcion}</div>
+          <div class="rubro-meta">${r.cuenta}${r.ctaAux?' · '+r.ctaAux:''} · <span style="color:var(--blue-text)">${execLbl}</span></div>
+          <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <span class="badge ${pb}">${r.prioridad}</span>
+            <span style="font-size:12px;font-weight:700;color:var(--blue-text)">Total: ${numFmt(total)}</span>
+          </div>
+        </div>
+        ${!locked?`<button class="btn btn-danger btn-sm" onclick="removeRubro(${i})">✕</button>`:''}
+      </div>
+      <div style="font-size:11px;color:var(--text2);padding:5px 8px;background:var(--bg3);border-radius:6px;margin-bottom:8px">📝 ${r.justificacion||'—'}</div>
+      ${mHtml}
+    </div>`;
+  }).join('');
+}
+function updateMes(ri,mi,val){const d=getAreaData(currentArea);d.rubros[ri].meses[mi]=parseCOP(val);setAreaData(currentArea,d);renderAreaScreen()}
+function removeRubro(i){if(!confirm('¿Eliminar?'))return;const d=getAreaData(currentArea);d.rubros.splice(i,1);setAreaData(currentArea,d);renderAreaScreen()}
+function openAddRubroModal(){
+  document.getElementById('m-desc').value='';document.getElementById('m-just').value='';document.getElementById('m-cta-aux').value='';
+  document.getElementById('m-error').style.display='none';
+  document.getElementById('m-cuenta').innerHTML=CLASES.map(c=>`<option value="${c}">${c}</option>`).join('');
+  execType=null;checkedMonths=new Set();
+  document.querySelectorAll('.exec-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('exec-help').textContent='';
+  ['row-mensual','row-meses','row-unico'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('modal-rubro').style.display='flex';
+  setTimeout(()=>document.getElementById('m-desc').focus(),100);
+}
+function setExecType(t){
+  execType=t;checkedMonths=new Set();
+  document.querySelectorAll('.exec-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.exec-btn[onclick="setExecType('${t}')"]`).classList.add('active');
+  const h={mensual:'El valor se replica en los 12 meses.',meses:'Marca los meses en que ocurre el gasto.',unico:'El gasto ocurre una sola vez en el año.'};
+  document.getElementById('exec-help').textContent=h[t];
+  ['row-mensual','row-meses','row-unico'].forEach(id=>document.getElementById(id).style.display='none');
+  if(t==='mensual')document.getElementById('row-mensual').style.display='block';
+  if(t==='meses'){document.getElementById('row-meses').style.display='block';renderMonthChecks();document.getElementById('m-mismo-valor').checked=false;document.getElementById('row-valor-unico').style.display='none';document.getElementById('row-valores-individuales').style.display='none';}
+  if(t==='unico')document.getElementById('row-unico').style.display='block';
+}
+function renderMonthChecks(){document.getElementById('month-checks-grid').innerHTML=MESES.map((m,i)=>`<label class="month-check-item${checkedMonths.has(i)?' checked':''}" id="mchk-lbl-${i}"><input type="checkbox" ${checkedMonths.has(i)?'checked':''} onchange="toggleMonth(${i})"><span>${m}</span></label>`).join('');}
+function toggleMonth(i){if(checkedMonths.has(i))checkedMonths.delete(i);else checkedMonths.add(i);renderMonthChecks();if(!document.getElementById('m-mismo-valor').checked&&document.getElementById('row-valores-individuales').style.display!=='none')buildVI();}
+function toggleMismoValor(){const c=document.getElementById('m-mismo-valor').checked;document.getElementById('row-valor-unico').style.display=c?'block':'none';document.getElementById('row-valores-individuales').style.display=c?'none':'block';if(!c)buildVI();}
+function buildVI(){const s=[...checkedMonths].sort((a,b)=>a-b);document.getElementById('valores-individuales-list').innerHTML=s.map(i=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font-size:13px;min-width:80px;color:var(--text2)">${MESES_FULL[i]}</span><input type="text" id="val-mes-${i}" placeholder="Valor COP" inputmode="numeric" style="flex:1"></div>`).join('');}
+function saveRubro(){
+  const desc=document.getElementById('m-desc').value.trim();
+  const just=document.getElementById('m-just').value.trim();
+  const cuenta=document.getElementById('m-cuenta').value;
+  const ctaAux=document.getElementById('m-cta-aux').value.trim();
+  const prioridad=document.getElementById('m-prioridad').value;
+  const e=document.getElementById('m-error');
+  if(!desc){e.textContent='La descripción es obligatoria.';e.style.display='block';return}
+  if(!just){e.textContent='La justificación es obligatoria.';e.style.display='block';return}
+  if(!execType){e.textContent='Selecciona cómo se ejecuta.';e.style.display='block';return}
+  e.style.display='none';
+  let meses=Array(12).fill(0);
+  if(execType==='mensual'){const v=parseCOP(document.getElementById('m-valor-mensual').value);if(!v){e.textContent='Ingresa el valor mensual.';e.style.display='block';return}meses=Array(12).fill(v);}
+  else if(execType==='unico'){const mi=document.getElementById('m-mes-unico').value;const v=parseCOP(document.getElementById('m-valor-unico').value);if(mi===''){e.textContent='Selecciona el mes.';e.style.display='block';return}if(!v){e.textContent='Ingresa el valor.';e.style.display='block';return}meses[parseInt(mi)]=v;}
+  else if(execType==='meses'){if(!checkedMonths.size){e.textContent='Selecciona al menos un mes.';e.style.display='block';return}const same=document.getElementById('m-mismo-valor').checked;if(same){const v=parseCOP(document.getElementById('m-valor-unico-meses').value);if(!v){e.textContent='Ingresa el valor.';e.style.display='block';return}checkedMonths.forEach(i=>meses[i]=v);}else{let ok=true;checkedMonths.forEach(i=>{const v=parseCOP(document.getElementById('val-mes-'+i)?.value||'0');if(!v)ok=false;meses[i]=v;});if(!ok){e.textContent='Completa todos los valores.';e.style.display='block';return}}}
+  const d=getAreaData(currentArea);d.rubros.push({descripcion:desc,cuenta,ctaAux,justificacion:just,prioridad,execType,meses});setAreaData(currentArea,d);closeModal('modal-rubro');renderAreaScreen();
+}
+function guardarArea(){
+  const d=getAreaData(currentArea);
+  if(!d.rubros.length){alert('Agrega al menos un rubro.');return}
+  const sv=d.rubros.filter(r=>r.meses.every(v=>!v||v===0));
+  if(sv.length&&!confirm(`Hay ${sv.length} rubro(s) sin valores. ¿Marcar como lista?`))return;
+  d.listo=true;setAreaData(currentArea,d);renderAreaScreen();alert('✓ Área marcada como lista.');
+}
+
+// ═══════════ NÓMINA ═══════════
+// Estructura interna de cada registro (espeja exactamente la plantilla general):
+// {tipo, descripcion, ccCod, ccNombre, cuentaMaestro, clase, cuentaAux, nombreCuenta, presupuesto2026, prioridad, meses[12]}
+
+function nomFilaToMeses(row, colStart){
+  // Lee hasta 12 valores numéricos desde colStart
+  const meses=[];
+  for(let m=0;m<12;m++){
+    const v=row[colStart+m];
+    const n=(v===''||v==null)?0:Number(String(v).replace(/[^0-9.-]/g,''))||0;
+    meses.push(Math.abs(n));
+  }
+  return meses;
+}
+
+function renderNomina(){
+  const nd=getNominaData();
+  const filas=nd.filas||[];
+  // Totales por mes
+  const totMes=MESES.map((_,mi)=>filas.reduce((s,f)=>s+(f.meses[mi]||0),0));
+  const totAnual=totMes.reduce((s,v)=>s+v,0);
+  document.getElementById('nom-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Registros</div><div class="metric-value">${filas.length}</div></div>
+    <div class="metric"><div class="metric-label">Total mensual prom.</div><div class="metric-value" style="font-size:14px">${numFmt(totAnual/12)}</div></div>
+    <div class="metric"><div class="metric-label">Total anual</div><div class="metric-value" style="font-size:14px">${numFmt(totAnual)}</div></div>
+    <div class="metric"><div class="metric-label">Estado</div><div class="metric-value" style="font-size:14px">${nd.listo?'✅ Lista':'⏳ Pendiente'}</div></div>`;
+  if(!filas.length){
+    document.getElementById('nom-table-wrap').innerHTML='<div class="empty-state"><span class="icon">👤</span><div style="font-size:14px;font-weight:600;margin-bottom:4px">Sin registros aún</div><div style="font-size:12px">Carga el Excel con la plantilla o agrega manual</div></div>';
+    return;
+  }
+  const mCols=MESES.map(m=>`<th class="r" style="font-size:10px">${m}</th>`).join('');
+  const tCols=totMes.map(v=>`<td class="r" style="font-weight:700">${v>0?numK(v):''}</td>`).join('');
+  const rows=filas.map((f,i)=>{
+    const mc=f.meses.map(v=>`<td class="r" style="font-size:11px">${v>0?numK(v):''}</td>`).join('');
+    return `<tr>
+      <td style="font-size:11px">${f.tipo||'Gasto'}</td>
+      <td style="font-size:12px;font-weight:600;max-width:160px">${f.descripcion||''}</td>
+      <td style="font-size:11px;color:var(--text3)">${f.ccCod||''}</td>
+      <td style="font-size:11px">${f.ccNombre||''}</td>
+      <td style="font-size:10px;color:var(--text3)">${f.cuentaMaestro||''}</td>
+      <td><span class="badge badge-purple" style="font-size:10px">${f.clase||'Nómina'}</span></td>
+      <td style="font-size:10px;color:var(--text3)">${f.cuentaAux||''}</td>
+      <td style="font-size:11px;max-width:140px">${f.nombreCuenta||''}</td>
+      <td style="font-size:11px">${f.prioridad||'Nómina'}</td>
+      ${mc}
+      <td class="r" style="font-weight:700;color:var(--purple-text);font-size:11px">${numFmt(f.meses.reduce((s,v)=>s+v,0))}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removeNominaFila(${i})">✕</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('nom-table-wrap').innerHTML=`<table class="data-table">
+    <thead><tr>
+      <th>Tipo</th><th>Descripción</th><th>CC</th><th>CC Nombre</th>
+      <th>Cta. Maestro</th><th>Clase</th><th>Cta. Auxiliar</th><th>Nombre Cuenta</th><th>Prioridad</th>
+      ${mCols}<th class="r">Total</th><th></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr class="total-purple">
+      <td colspan="9">TOTAL NÓMINA</td>${tCols}<td class="r">${numFmt(totAnual)}</td><td></td>
+    </tr></tfoot>
+  </table>`;
+}
+
+function importNominaExcel(input){
+  const f=input.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(data.length<2){alert('El archivo no tiene datos.');return}
+      // Detect header row (contains "Tipo" or "Descripcion" or "CC")
+      let hdrRow=0;
+      for(let i=0;i<Math.min(5,data.length);i++){
+        const r=data[i].map(v=>String(v||'').toLowerCase());
+        if(r.some(v=>v.includes('tipo')||v.includes('descripci')||v.includes('nombre cuenta'))){hdrRow=i;break;}
+      }
+      const hdr=data[hdrRow].map(v=>String(v||'').toLowerCase().trim());
+      // Map columns by header name
+      const ci=(keys)=>{for(const k of keys){const idx=hdr.findIndex(h=>h.includes(k));if(idx>=0)return idx;}return -1;};
+      const colTipo=ci(['tipo']);
+      const colDesc=ci(['descripci']);
+      const colCcCod=ci(['cc','centro']);
+      const colCcNom=ci(['cc nombre','nombre cc','nombre del cc','nombre centro']);
+      const colCtaMae=ci(['cuenta maestro','cta maestro','cuenta mae']);
+      const colClase=ci(['clase']);
+      const colCtaAux=ci(['cuenta aux','cta aux','auxiliar']);
+      const colNomCta=ci(['nombre cuenta','nombre de cuenta']);
+      const colPpto=ci(['presupuesto','ppto']);
+      const colPrio=ci(['prioridad','prior']);
+      // Month columns: find Ene or Enero
+      let colMesInicio=-1;
+      for(let c=0;c<hdr.length;c++){
+        if(hdr[c].startsWith('ene')||hdr[c]==='enero'){colMesInicio=c;break;}
+      }
+      if(colMesInicio<0){
+        // fallback: columns after presupuesto/prioridad
+        colMesInicio=Math.max(colPpto,colPrio,colNomCta,colClase)+1;
+      }
+      const filas=[];
+      for(let i=hdrRow+1;i<data.length;i++){
+        const row=data[i];
+        // Skip empty rows or header repetitions
+        const primerVal=String(row[0]||'').trim();
+        if(!primerVal||primerVal.toLowerCase()==='tipo') continue;
+        const meses=nomFilaToMeses(row,colMesInicio);
+        if(meses.every(v=>v===0)) continue; // skip rows with no values
+        filas.push({
+          tipo:       colTipo>=0?String(row[colTipo]||'Gasto').trim():'Gasto',
+          descripcion:colDesc>=0?String(row[colDesc]||'').trim():'',
+          ccCod:      colCcCod>=0?String(row[colCcCod]||'').trim():'',
+          ccNombre:   colCcNom>=0?String(row[colCcNom]||'').trim():'',
+          cuentaMaestro:colCtaMae>=0?String(row[colCtaMae]||'').trim():'',
+          clase:      colClase>=0?String(row[colClase]||'Nómina').trim():'Nómina',
+          cuentaAux:  colCtaAux>=0?String(row[colCtaAux]||'').trim():'',
+          nombreCuenta:colNomCta>=0?String(row[colNomCta]||'').trim():'',
+          presupuesto2026: colPpto>=0?Number(row[colPpto])||0:0,
+          prioridad:  colPrio>=0?String(row[colPrio]||'Nómina').trim():'Nómina',
+          meses,
+        });
+      }
+      const nd=getNominaData();
+      nd.filas=[...(nd.filas||[]),...filas];
+      setNominaData(nd);renderNomina();
+      alert(`✓ ${filas.length} filas de nómina cargadas. Total registros: ${nd.filas.length}`);
+    }catch(err){alert('Error al leer el archivo.\n'+err.message);}
+    input.value='';
+  };
+  reader.readAsArrayBuffer(f);
+}
+
+function removeNominaFila(i){
+  if(!confirm('¿Eliminar esta fila?'))return;
+  const nd=getNominaData();nd.filas.splice(i,1);setNominaData(nd);renderNomina();
+}
+
+function openNominaModal(){
+  ['nm-nombre','nm-cargo','nm-area','nm-salario','nm-transporte','nm-alimentacion','nm-costo-total']
+    .forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nm-error').style.display='none';
+  document.getElementById('modal-nomina').style.display='flex';
+  setTimeout(()=>document.getElementById('nm-nombre').focus(),100);
+}
+
+function saveEmpleado(){
+  // Manual add: creates one row per concepto (salario, prestaciones)
+  const nombre=document.getElementById('nm-nombre').value.trim();
+  const area=document.getElementById('nm-area').value.trim();
+  const costoTotal=parseCOP(document.getElementById('nm-costo-total').value);
+  const e=document.getElementById('nm-error');
+  if(!nombre){e.textContent='El nombre es obligatorio.';e.style.display='block';return}
+  if(!costoTotal){e.textContent='Ingresa el costo total mensual.';e.style.display='block';return}
+  e.style.display='none';
+  const cargo=document.getElementById('nm-cargo').value.trim();
+  const tipo=document.getElementById('nm-tipo').value;
+  const nd=getNominaData();
+  nd.filas=nd.filas||[];
+  // One row: salary + all costs bundled
+  nd.filas.push({
+    tipo:'Gasto', descripcion:nombre+(cargo?' — '+cargo:''),
+    ccCod:'', ccNombre:area, cuentaMaestro:'', clase:'Nómina',
+    cuentaAux:'', nombreCuenta:'Costo total empleado', presupuesto2026:costoTotal*12,
+    prioridad:'Nómina', meses:Array(12).fill(costoTotal),
+  });
+  setNominaData(nd);closeModal('modal-nomina');renderNomina();
+}
+
+function marcarNominaLista(){
+  const nd=getNominaData();
+  if(!(nd.filas||[]).length){alert('Agrega al menos un registro.');return}
+  nd.listo=true;setNominaData(nd);renderNomina();alert('✓ Nómina marcada como lista.');
+}
+
+// ═══════════ AUMENTOS ═══════════
+function renderAumentos(){
+  const ad=getAumentosData();
+  const filas=ad.filas||[];
+  const totMes=MESES.map((_,mi)=>filas.reduce((s,f)=>s+(f.meses[mi]||0),0));
+  const totAnual=totMes.reduce((s,v)=>s+v,0);
+  document.getElementById('aum-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Registros</div><div class="metric-value">${filas.length}</div></div>
+    <div class="metric"><div class="metric-label">Impacto anual</div><div class="metric-value" style="font-size:14px">${numFmt(totAnual)}</div></div>
+    <div class="metric"><div class="metric-label">Estado</div><div class="metric-value" style="font-size:14px">${ad.listo?'✅ Listos':'⏳ Pendiente'}</div></div>`;
+  if(!filas.length){
+    document.getElementById('aum-table-wrap').innerHTML='<div class="empty-state"><span class="icon">📈</span><div style="font-size:14px;font-weight:600;margin-bottom:4px">Sin registros aún</div><div style="font-size:12px">Carga el Excel con la plantilla o agrega manual</div></div>';
+    return;
+  }
+  const mCols=MESES.map(m=>`<th class="r" style="font-size:10px">${m}</th>`).join('');
+  const tCols=totMes.map(v=>`<td class="r" style="font-weight:700">${v>0?numK(v):''}</td>`).join('');
+  const rows=filas.map((f,i)=>{
+    const mc=f.meses.map(v=>`<td class="r" style="font-size:11px;${v>0?'color:var(--teal-text);font-weight:600':''}">${v>0?numK(v):''}</td>`).join('');
+    const mesIni=f.meses.findIndex(v=>v>0);
+    return `<tr>
+      <td style="font-size:11px">${f.tipo||'Gasto'}</td>
+      <td style="font-size:12px;font-weight:600;max-width:160px">${f.descripcion||''}</td>
+      <td style="font-size:11px;color:var(--text3)">${f.ccCod||''}</td>
+      <td style="font-size:11px">${f.ccNombre||''}</td>
+      <td style="font-size:10px;color:var(--text3)">${f.cuentaMaestro||''}</td>
+      <td><span class="badge badge-blue" style="font-size:10px">${f.clase||'Aumentos'}</span></td>
+      <td style="font-size:10px;color:var(--text3)">${f.cuentaAux||''}</td>
+      <td style="font-size:11px;max-width:140px">${f.nombreCuenta||''}</td>
+      <td style="font-size:11px;color:var(--teal-text);font-weight:600">${mesIni>=0?MESES[mesIni]:'—'}</td>
+      ${mc}
+      <td class="r" style="font-weight:700;color:var(--teal-text);font-size:11px">${numFmt(f.meses.reduce((s,v)=>s+v,0))}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removeAumentoFila(${i})">✕</button></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('aum-table-wrap').innerHTML=`<table class="data-table">
+    <thead><tr>
+      <th>Tipo</th><th>Descripción</th><th>CC</th><th>CC Nombre</th>
+      <th>Cta. Maestro</th><th>Clase</th><th>Cta. Auxiliar</th><th>Nombre Cuenta</th><th>Desde</th>
+      ${mCols}<th class="r">Total</th><th></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr class="total-row">
+      <td colspan="9">TOTAL AUMENTOS</td>${tCols}<td class="r">${numFmt(totAnual)}</td><td></td>
+    </tr></tfoot>
+  </table>`;
+}
+
+function importAumentosExcel(input){
+  const f=input.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(data.length<2){alert('El archivo no tiene datos.');return}
+      let hdrRow=0;
+      for(let i=0;i<Math.min(5,data.length);i++){
+        const r=data[i].map(v=>String(v||'').toLowerCase());
+        if(r.some(v=>v.includes('tipo')||v.includes('descripci')||v.includes('nombre cuenta'))){hdrRow=i;break;}
+      }
+      const hdr=data[hdrRow].map(v=>String(v||'').toLowerCase().trim());
+      const ci=(keys)=>{for(const k of keys){const idx=hdr.findIndex(h=>h.includes(k));if(idx>=0)return idx;}return -1;};
+      const colTipo=ci(['tipo']);
+      const colDesc=ci(['descripci']);
+      const colCcCod=ci(['cc','centro']);
+      const colCcNom=ci(['cc nombre','nombre cc','nombre del cc','nombre centro']);
+      const colCtaMae=ci(['cuenta maestro','cta maestro']);
+      const colClase=ci(['clase']);
+      const colCtaAux=ci(['cuenta aux','cta aux','auxiliar']);
+      const colNomCta=ci(['nombre cuenta','nombre de cuenta']);
+      const colPpto=ci(['presupuesto','ppto']);
+      const colPrio=ci(['prioridad','prior']);
+      let colMesInicio=-1;
+      for(let c=0;c<hdr.length;c++){
+        if(hdr[c].startsWith('ene')||hdr[c]==='enero'){colMesInicio=c;break;}
+      }
+      if(colMesInicio<0) colMesInicio=Math.max(colPpto,colPrio,colNomCta,colClase)+1;
+      const filas=[];
+      for(let i=hdrRow+1;i<data.length;i++){
+        const row=data[i];
+        const primerVal=String(row[0]||'').trim();
+        if(!primerVal||primerVal.toLowerCase()==='tipo') continue;
+        const meses=nomFilaToMeses(row,colMesInicio);
+        if(meses.every(v=>v===0)) continue;
+        filas.push({
+          tipo:       colTipo>=0?String(row[colTipo]||'Gasto').trim():'Gasto',
+          descripcion:colDesc>=0?String(row[colDesc]||'').trim():'',
+          ccCod:      colCcCod>=0?String(row[colCcCod]||'').trim():'',
+          ccNombre:   colCcNom>=0?String(row[colCcNom]||'').trim():'',
+          cuentaMaestro:colCtaMae>=0?String(row[colCtaMae]||'').trim():'',
+          clase:      colClase>=0?String(row[colClase]||'Aumentos').trim():'Aumentos',
+          cuentaAux:  colCtaAux>=0?String(row[colCtaAux]||'').trim():'',
+          nombreCuenta:colNomCta>=0?String(row[colNomCta]||'').trim():'',
+          presupuesto2026: colPpto>=0?Number(row[colPpto])||0:0,
+          prioridad:  colPrio>=0?String(row[colPrio]||'Aumentos').trim():'Aumentos',
+          meses,
+        });
+      }
+      const ad=getAumentosData();
+      ad.filas=[...(ad.filas||[]),...filas];
+      setAumentosData(ad);renderAumentos();
+      alert(`✓ ${filas.length} filas de aumentos cargadas. Total registros: ${ad.filas.length}`);
+    }catch(err){alert('Error al leer el archivo.\n'+err.message);}
+    input.value='';
+  };
+  reader.readAsArrayBuffer(f);
+}
+
+function removeAumentoFila(i){
+  if(!confirm('¿Eliminar esta fila?'))return;
+  const ad=getAumentosData();ad.filas.splice(i,1);setAumentosData(ad);renderAumentos();
+}
+
+function openAumentoModal(){
+  ['au-nombre','au-area','au-monto','au-just'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('au-mes').value='';
+  document.getElementById('au-error').style.display='none';
+  document.getElementById('modal-aumento').style.display='flex';
+  setTimeout(()=>document.getElementById('au-nombre').focus(),100);
+}
+
+function saveAumento(){
+  const nombre=document.getElementById('au-nombre').value.trim();
+  const mes=document.getElementById('au-mes').value;
+  const monto=parseCOP(document.getElementById('au-monto').value);
+  const e=document.getElementById('au-error');
+  if(!nombre){e.textContent='El nombre es obligatorio.';e.style.display='block';return}
+  if(mes===''){e.textContent='Selecciona el mes.';e.style.display='block';return}
+  if(!monto){e.textContent='Ingresa el monto.';e.style.display='block';return}
+  e.style.display='none';
+  const desde=parseInt(mes);
+  const meses=Array(12).fill(0).map((_,mi)=>mi>=desde?monto:0);
+  const ad=getAumentosData();
+  ad.filas=ad.filas||[];
+  ad.filas.push({
+    tipo:'Gasto', descripcion:nombre,
+    ccCod:'', ccNombre:document.getElementById('au-area').value.trim(),
+    cuentaMaestro:'', clase:'Aumentos', cuentaAux:'',
+    nombreCuenta:document.getElementById('au-tipo').value,
+    presupuesto2026:meses.reduce((s,v)=>s+v,0),
+    prioridad:'Aumentos', meses,
+  });
+  setAumentosData(ad);closeModal('modal-aumento');renderAumentos();
+}
+
+function marcarAumentosListos(){
+  const ad=getAumentosData();
+  if(!(ad.filas||[]).length){alert('Agrega al menos un registro.');return}
+  ad.listo=true;setAumentosData(ad);renderAumentos();alert('✓ Aumentos marcados como listos.');
+}
+
+// ═══════════ GASTOS FIJOS ═══════════
+// Fuente de datos en memoria: puede ser GASTOS_FIJOS_BASE o datos cargados del soporte
+let gfRawData = null; // [{cc, cuenta, nombre, meses:[v0..v11]}] leídos del Excel
+
+// Categorías detectadas automáticamente por palabras clave en el nombre de cuenta
+const GF_CLASES = [
+  {clase:'Arriendo Oficina',           keys:['arriendo oficina','arrendamiento oficina']},
+  {clase:'Administración Oficina',     keys:['administración oficina','administracion oficina']},
+  {clase:'Servicio de Energía',        keys:['energia','energía','servicio de energia']},
+  {clase:'Servicio Público - Acueducto',keys:['acueducto','alcantarillado']},
+  {clase:'Servicio de Aseo',           keys:['aseo']},
+  {clase:'Servicio de Internet',       keys:['internet']},
+  {clase:'Servicio Telefónico',        keys:['telefon','teléfon']},
+];
+
+function detectarClase(nombre){
+  const n=(nombre||'').toLowerCase();
+  for(const c of GF_CLASES){ if(c.keys.some(k=>n.includes(k))) return c.clase; }
+  return null; // no es gasto fijo relevante
+}
+
+function renderGastosFijos(){
+  // Sync UI selector values
+  const ipcEl=document.getElementById('gf-ipc');
+  const anioEl=document.getElementById('gf-anio');
+  const gfd=getGFData();
+  if(ipcEl && gfd.ipc!=null) ipcEl.value=gfd.ipc;
+  if(anioEl && gfd.anio) anioEl.value=gfd.anio;
+  if(gfd.mesInicio!=null) document.getElementById('gf-mes-inicio').value=gfd.mesInicio;
+  if(gfd.mesFin!=null)    document.getElementById('gf-mes-fin').value=gfd.mesFin;
+  // Source label
+  const srcTxt=document.getElementById('gf-source-txt');
+  if(srcTxt) srcTxt.textContent = gfd.fuente==='excel'
+    ? `📂 Soporte cargado: ${gfd.archivoNombre||'Excel'} · ${gfd.rubros.length} conceptos`
+    : `📋 Usando datos base 2025 (integrados) · ${gfd.rubros.length} conceptos`;
+  renderGFMetrics();
+  renderGFTabla();
+}
+
+function renderGFMetrics(){
+  const gfd=getGFData();
+  const ipc=gfd.ipc||4.5;const anio=gfd.anio||2026;
+  const mesIni=gfd.mesInicio!=null?gfd.mesInicio:0;
+  const mesFin=gfd.mesFin!=null?gfd.mesFin:7;
+  const totalMensual=gfd.rubros.reduce((s,r)=>s+(r.meses[0]||0),0);
+  document.getElementById('gf-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Conceptos</div><div class="metric-value">${gfd.rubros.length}</div></div>
+    <div class="metric"><div class="metric-label">IPC aplicado</div><div class="metric-value">${ipc}%</div></div>
+    <div class="metric"><div class="metric-label">Rango promedio</div><div class="metric-value" style="font-size:14px">${MESES[mesIni]}–${MESES[mesFin]}</div></div>
+    <div class="metric"><div class="metric-label">Total mensual ${anio}</div><div class="metric-value" style="font-size:14px">${numFmt(totalMensual)}</div></div>
+    <div class="metric"><div class="metric-label">Total anual ${anio}</div><div class="metric-value" style="font-size:14px">${numFmt(totalMensual*12)}</div></div>
+    <div class="metric"><div class="metric-label">Estado</div><div class="metric-value" style="font-size:14px">${gfd.listo?'✅ Listos':'⏳ Pendiente'}</div></div>`;
+}
+
+function renderGFTabla(){
+  const gfd=getGFData();
+  const filtro=document.getElementById('gf-filter')?.value||'';
+  const rubros=filtro?gfd.rubros.filter(r=>r.clase===filtro):gfd.rubros;
+  const ipc=gfd.ipc||4.5; const anio=gfd.anio||2026;
+  const emptyAlert=document.getElementById('gf-alert-empty');
+  if(!gfd.rubros.length){ if(emptyAlert)emptyAlert.style.display='block'; document.getElementById('gf-table-wrap').innerHTML=''; return; }
+  if(emptyAlert)emptyAlert.style.display='none';
+  if(!rubros.length){ document.getElementById('gf-table-wrap').innerHTML='<div class="empty-state"><span class="icon">📂</span><div>Sin conceptos para esta categoría</div></div>'; return; }
+  const rows=rubros.map(r=>{
+    const globalIdx=gfd.rubros.indexOf(r);
+    const mensual=r.meses[0]||0;
+    return `<tr>
+      <td><span class="badge" style="background:var(--orange-bg);color:var(--orange-text);font-size:10px">${r.clase}</span></td>
+      <td style="font-weight:600;font-size:12px">${r.nombre}</td>
+      <td style="font-size:11px;color:var(--text3)">${r.cc}</td>
+      <td style="font-size:11px">${r.cuenta}</td>
+      <td class="r" style="font-size:11px;color:var(--text3)">${numFmt(r.promedio)}</td>
+      <td class="r" style="font-size:11px;color:var(--text2)">${numFmt(r.promedio*(1+ipc/100))}</td>
+      <td class="r">
+        <input type="text" value="${Math.round(mensual).toLocaleString('es-CO')}" inputmode="numeric"
+          style="width:115px;text-align:right;font-size:12px;padding:3px 6px"
+          onchange="updateGFMensual(${globalIdx},this.value)" onfocus="this.select()"
+          title="Editable: se replica igual en los 12 meses de ${anio}">
+      </td>
+      <td class="r" style="font-weight:600;color:var(--orange-text)">${numFmt(mensual*12)}</td>
+    </tr>`;
+  }).join('');
+  const totProm=rubros.reduce((s,r)=>s+(r.promedio||0),0);
+  const totMen=rubros.reduce((s,r)=>s+(r.meses[0]||0),0);
+  document.getElementById('gf-table-wrap').innerHTML=`<table class="data-table">
+    <thead><tr>
+      <th>Categoría</th><th>Concepto</th><th>CC</th><th>Cuenta</th>
+      <th class="r">Promedio real</th>
+      <th class="r">Promedio + IPC ${ipc}%</th>
+      <th class="r">Valor mensual ${anio} (editable)</th>
+      <th class="r">Total anual</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr class="total-row">
+      <td colspan="4">TOTAL</td>
+      <td class="r">${numFmt(totProm)}</td>
+      <td class="r">${numFmt(totProm*(1+ipc/100))}</td>
+      <td class="r">${numFmt(totMen)}</td>
+      <td class="r">${numFmt(totMen*12)}</td>
+    </tr></tfoot>
+  </table>`;
+}
+
+function updateGFMensual(idx,val){
+  const gfd=getGFData();
+  const v=parseCOP(String(val).replace(/\./g,'').replace(',','.'));
+  gfd.rubros[idx].meses=Array(12).fill(v);
+  setGFData(gfd); renderGFTabla(); renderGFMetrics();
+}
+
+// Recalcular con los parámetros actuales (IPC, rango de meses)
+function recalcularGastosFijos(){
+  const ipc=parseFloat(document.getElementById('gf-ipc').value)||4.5;
+  const anio=parseInt(document.getElementById('gf-anio').value)||2026;
+  const mesIni=parseInt(document.getElementById('gf-mes-inicio').value)||0;
+  const mesFin=parseInt(document.getElementById('gf-mes-fin').value)||7;
+  if(mesIni>mesFin){ alert('El mes de inicio no puede ser mayor al mes de fin.'); return; }
+  const numMeses=mesFin-mesIni+1;
+  const gfd=getGFData();
+
+  // Determine source: loaded raw data or base
+  let base;
+  if(gfRawData && gfRawData.length){
+    // Build from raw loaded Excel rows: each row has meses[0..N]
+    const claseMap={};
+    GF_CLASES.forEach(c=>claseMap[c.clase]=c.clase);
+    const rows=[];
+    gfRawData.forEach(row=>{
+      const clase=detectarClase(row.nombre);
+      if(!clase) return;
+      // Average over selected range
+      const mesesDisp=row.meses.slice(mesIni, mesFin+1).filter(v=>v!=null&&!isNaN(v)&&v>0);
+      if(!mesesDisp.length) return;
+      const promedio=mesesDisp.reduce((s,v)=>s+v,0)/mesesDisp.length;
+      const ppto=promedio*(1+ipc/100);
+      rows.push({clase, cuenta:row.cuenta, nombre:row.nombre, cc:String(row.cc), promedio:Math.round(promedio), ppto2026:Math.round(ppto), meses:Array(12).fill(Math.round(ppto))});
+    });
+    base=rows;
+  } else {
+    // Recalculate from embedded base (has fixed promedio from Ene-Ago 2025)
+    base=GASTOS_FIJOS_BASE.map(g=>({...g, ppto2026:Math.round(g.promedio*(1+ipc/100)), meses:Array(12).fill(Math.round(g.promedio*(1+ipc/100)))}));
+  }
+
+  const updated={...gfd, rubros:base, ipc, anio, mesInicio:mesIni, mesFin, fuente: gfRawData&&gfRawData.length?'excel':'base', listo:false};
+  setGFData(updated);
+
+  // Show summary
+  const totalMen=base.reduce((s,r)=>s+(r.meses[0]||0),0);
+  const sumEl=document.getElementById('gf-calc-summary');
+  if(sumEl){
+    sumEl.style.display='block';
+    sumEl.innerHTML=`✅ <strong>Recálculo completado:</strong> ${base.length} conceptos · Promedio ${MESES[mesIni]}–${MESES[mesFin]} + IPC ${ipc}% · Total mensual ${anio}: <strong>${numFmt(totalMen)}</strong> · Total anual: <strong>${numFmt(totalMen*12)}</strong>`;
+  }
+  renderGastosFijos();
+}
+
+// Import soporte Excel — expects: CC | Cuenta | Nombre cuenta | Ene | Feb | Mar | ...
+function importSoporteExcel(input){
+  const f=input.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+      if(data.length<2){alert('El archivo no tiene datos.');return}
+      // Find header row — look for a row that has "cc" or "cuenta" in first 5 cols
+      let hdrIdx=0;
+      for(let i=0;i<Math.min(5,data.length);i++){
+        const row=data[i].map(v=>String(v||'').toLowerCase());
+        if(row.some(v=>v.includes('cc')||v.includes('cuenta')||v.includes('nombre'))){hdrIdx=i;break;}
+      }
+      // Col indices: try to detect
+      const hdr=data[hdrIdx].map(v=>String(v||'').toLowerCase().trim());
+      const ccCol=hdr.findIndex(h=>h==='cc'||h==='centro'||h==='c.c');
+      const ctaCol=hdr.findIndex(h=>h.includes('cuenta')&&!h.includes('nombre'));
+      const nomCol=hdr.findIndex(h=>h.includes('nombre'));
+      // Month columns: after col 3, detect by date pattern or month name
+      const mesColStart = Math.max(ccCol,ctaCol,nomCol)+1 || 3;
+      const rows=[];
+      for(let i=hdrIdx+1;i<data.length;i++){
+        const row=data[i];
+        const cc=row[ccCol>=0?ccCol:0];
+        const cta=row[ctaCol>=0?ctaCol:1];
+        const nom=row[nomCol>=0?nomCol:2];
+        if(!nom||!String(nom).trim()) continue;
+        // Read up to 12 month values starting at mesColStart
+        const meses=[];
+        for(let m=0;m<12;m++){
+          const v=row[mesColStart+m];
+          meses.push(v!=null&&!isNaN(Number(v))?Math.abs(Number(v)):null);
+        }
+        rows.push({cc:String(cc||'').trim(), cuenta:String(cta||'').trim(), nombre:String(nom).trim(), meses});
+      }
+      gfRawData=rows;
+      const relevantes=rows.filter(r=>detectarClase(r.nombre));
+      const txtEl=document.getElementById('gf-source-txt');
+      if(txtEl) txtEl.innerHTML=`📂 <strong>${f.name}</strong> cargado · ${rows.length} filas totales · ${relevantes.length} conceptos de gastos fijos detectados`;
+      // Auto-recalculate with current params
+      recalcularGastosFijos();
+      alert(`✓ Soporte cargado: ${rows.length} filas · ${relevantes.length} conceptos de gastos fijos detectados.\nSe recalculó automáticamente con los parámetros actuales.`);
+    }catch(err){alert('Error al leer el archivo. Verifica que tenga el formato correcto.\n\nDetalle: '+err.message);}
+    input.value='';
+  };
+  reader.readAsArrayBuffer(f);
+}
+
+function resetGastosFijos(){
+  if(!confirm('¿Restaurar todos los datos al soporte base 2025 con el IPC y rango actuales?'))return;
+  gfRawData=null;
+  const ipc=parseFloat(document.getElementById('gf-ipc')?.value)||4.5;
+  const anio=parseInt(document.getElementById('gf-anio')?.value)||2026;
+  const mesIni=parseInt(document.getElementById('gf-mes-inicio')?.value)||0;
+  const mesFin=parseInt(document.getElementById('gf-mes-fin')?.value)||7;
+  const base=GASTOS_FIJOS_BASE.map(g=>({...g,ppto2026:Math.round(g.promedio*(1+ipc/100)),meses:Array(12).fill(Math.round(g.promedio*(1+ipc/100)))}));
+  setGFData({rubros:base,ipc,anio,mesInicio:mesIni,mesFin,fuente:'base',listo:false});
+  const txtEl=document.getElementById('gf-source-txt');
+  if(txtEl) txtEl.textContent='📋 Usando datos base 2025 (integrados)';
+  const sumEl=document.getElementById('gf-calc-summary');
+  if(sumEl) sumEl.style.display='none';
+  renderGastosFijos();
+}
+
+function marcarGFListos(){const gfd=getGFData();if(!gfd.rubros.length){alert('No hay datos en gastos fijos.');return}gfd.listo=true;setGFData(gfd);renderGFMetrics();alert('✓ Gastos fijos marcados como listos.');}
+
+// ═══════════ CONSOLIDADOR ═══════════
+let consolTab='todas';
+function renderConsolidador(){
+  const allRubros=[];
+  AREAS.forEach(a=>{const d=getAreaData(a.id);d.rubros.forEach(r=>allRubros.push({...r,area:a.name,areaId:a.id,cc:a.cc}))});
+  const nd=getNominaData();const ad=getAumentosData();const gfd=getGFData();
+  const totalAreas=allRubros.reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const totalNom=(nd.filas||[]).reduce((s,f)=>s+f.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const totalAum=(ad.filas||[]).reduce((s,f)=>s+f.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const totalGF=gfd.rubros.reduce((s,r)=>s+(r.meses[0]||0),0)*12;
+  const areasListas=AREAS.filter(a=>getAreaData(a.id).listo).length;
+  document.getElementById('consol-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Total rubros áreas</div><div class="metric-value">${allRubros.length}</div></div>
+    <div class="metric"><div class="metric-label">Total áreas (anual)</div><div class="metric-value" style="font-size:14px">$${Math.round(totalAreas/1e6).toLocaleString('es-CO')}M</div></div>
+    <div class="metric"><div class="metric-label">Áreas listas</div><div class="metric-value">${areasListas}/${AREAS.length}</div></div>
+    <div class="metric"><div class="metric-label">Total general</div><div class="metric-value" style="font-size:14px;color:var(--blue-text)">$${Math.round((totalAreas+totalNom+totalAum+totalGF)/1e6).toLocaleString('es-CO')}M</div></div>`;
+  document.getElementById('consol-conf-metrics').innerHTML=`
+    <div class="card" style="margin-bottom:0;border-color:var(--purple)">
+      <div style="font-size:12px;font-weight:700;color:var(--purple-text);margin-bottom:4px">👤 Nómina ${nd.listo?'<span class="badge badge-ok" style="font-size:10px">Lista</span>':'<span class="badge badge-pend" style="font-size:10px">Pendiente</span>'}</div>
+      <div style="font-size:12px;color:var(--purple-text)">${(nd.filas||[]).length} registros · <strong>${numFmt(totalNom)}</strong>/año</div>
+    </div>
+    <div class="card" style="margin-bottom:0;border-color:var(--purple)">
+      <div style="font-size:12px;font-weight:700;color:var(--purple-text);margin-bottom:4px">📈 Aumentos ${ad.listo?'<span class="badge badge-ok" style="font-size:10px">Listos</span>':'<span class="badge badge-pend" style="font-size:10px">Pendiente</span>'}</div>
+      <div style="font-size:12px;color:var(--purple-text)">${(ad.filas||[]).length} registros · <strong>${numFmt(totalAum)}</strong>/año</div>
+    </div>
+    <div class="card" style="margin-bottom:0;border-color:var(--orange-text)">
+      <div style="font-size:12px;font-weight:700;color:var(--orange-text);margin-bottom:4px">🏛️ Gastos fijos ${gfd.listo?'<span class="badge badge-ok" style="font-size:10px">Listos</span>':'<span class="badge badge-pend" style="font-size:10px">Pendiente</span>'}</div>
+      <div style="font-size:12px;color:var(--orange-text)">${gfd.rubros.length} conceptos · <strong>${numFmt(totalGF)}</strong>/año</div>
+    </div>`;
+  const tabs=[['todas','Todas'],...AREAS.map(a=>[a.id,a.icon+' '+a.name])];
+  document.getElementById('consol-tabs').innerHTML=tabs.map(([id,lbl])=>`<button class="tab${consolTab===id?' active':''}" onclick="setConsolTab('${id}')">${lbl}</button>`).join('');
+  const filtrados=consolTab==='todas'?allRubros:allRubros.filter(r=>r.areaId===consolTab);
+  if(!filtrados.length){document.getElementById('consol-table').innerHTML='<div class="empty-state"><span class="icon">📂</span><div>Sin rubros</div></div>';return}
+  const totM=MESES.map((_,mi)=>filtrados.reduce((s,r)=>s+(Number(r.meses[mi])||0),0));
+  const totA=totM.reduce((s,v)=>s+v,0);
+  const mCols=MESES.map(m=>`<th class="r">${m}</th>`).join('');
+  const tCols=totM.map(v=>`<td class="r">${numK(v)}</td>`).join('');
+  const rows=filtrados.map(r=>{
+    const tot=r.meses.reduce((s,v)=>s+(Number(v)||0),0);
+    const pb=r.prioridad==='Obligatorio'?'badge-ok':r.prioridad==='Aprobado'?'badge-blue':'badge-pend';
+    const mc=r.meses.map(v=>`<td class="r">${Number(v)>0?'$'+Math.round(Number(v)/1000)+'K':''}</td>`).join('');
+    return `<tr><td><div style="font-size:12px;font-weight:600">${r.descripcion}</div><div style="font-size:10px;color:var(--text3)">${r.area}</div></td><td style="font-size:11px">${r.cuenta}</td><td><span class="badge ${pb}" style="font-size:10px">${r.prioridad}</span></td>${mc}<td class="r" style="font-weight:700;color:var(--blue-text)">${numFmt(tot)}</td></tr>`;
+  }).join('');
+  document.getElementById('consol-table').innerHTML=`<div class="table-wrap"><table class="data-table"><thead><tr><th>Descripción / Área</th><th>Cuenta</th><th>Prioridad</th>${mCols}<th class="r">Total</th></tr></thead><tbody>${rows}</tbody><tfoot><tr class="total-row"><td colspan="3">TOTAL</td>${tCols}<td class="r">${numFmt(totA)}</td></tr></tfoot></table></div>`;
+}
+function setConsolTab(t){consolTab=t;renderConsolidador()}
+
+// ═══════════ GESTIÓN ═══════════
+function abrirGestion(){renderGestion();showScreen('gestion')}
+function renderGestion(){
+  document.getElementById('gestion-list').innerHTML=AREAS.map(a=>{
+    const d=getAreaData(a.id);const tot=d.rubros.reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:0.5px solid var(--border);flex-wrap:wrap;gap:8px">
+      <div><div style="font-size:13px;font-weight:700">${a.icon} ${a.name}</div><div style="font-size:11px;color:var(--text2)">${d.rubros.length} rubros · ${numFmt(tot)}</div></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="badge ${d.listo?'badge-lock':'badge-pend'}">${d.listo?'Bloqueada':'En progreso'}</span>
+        ${d.listo?`<button class="btn btn-sm btn-primary" onclick="desbloquear('${a.id}')">Desbloquear</button>`:`<button class="btn btn-sm btn-danger" onclick="limpiar('${a.id}')">Limpiar</button>`}
+      </div></div>`;
+  }).join('');
+}
+function desbloquear(id){if(!confirm('¿Desbloquear "'+AREAS.find(a=>a.id===id).name+'"?'))return;const d=getAreaData(id);d.listo=false;setAreaData(id,d);renderGestion();renderConsolidador()}
+function limpiar(id){if(!confirm('¿Limpiar TODOS los datos? No se puede deshacer.'))return;setAreaData(id,{rubros:[],listo:false});renderGestion();renderConsolidador()}
+
+// ═══════════ PLANTILLAS EXCEL ═══════════
+function descargarPlantillaExcel(tipo){
+  const wb=XLSX.utils.book_new();
+  // Exact same columns as the plantilla general
+  const HDR=['Tipo','Descripción','CC','CC Nombre','Cuenta maestro','Clase','Cuenta auxiliar','Nombre Cuenta','Presupuesto 2026','Prioridad','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const colW=[8,30,8,22,16,16,16,35,16,12,...MESES.map(()=>12)].map(w=>({wch:w}));
+  if(tipo==='nomina'){
+    const ejemplos=[
+      ['Gasto','',128,'128 51 Gasto Adm','51 Gasto Adm','Nómina',510570,'Aportes a Fondos de Pensiones y/o Cesant.','Administrativo','Nómina',3384000,3384000,3384000,3384000,3384000,3384000,3384000,3384000,3384000,3384000,3384000,3384000],
+      ['Gasto','',128,'128 51 Gasto Adm','51 Gasto Adm','Nómina',510568,'Aportes ARP','Administrativo','Nómina',147204,147204,147204,147204,147204,147204,147204,147204,147204,147204,147204,147204],
+      ['Gasto','',128,'128 51 Gasto Adm','51 Gasto Adm','Nómina',510527,'Auxilio de Transporte','Administrativo','Nómina',1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000],
+      ['Gasto','',128,'128 51 Gasto Adm','51 Gasto Adm','Nómina',510545,'Auxilios No Salariales (Alimentación)','Administrativo','Nómina',1890000,1890000,1890000,1890000,1890000,1890000,1890000,1890000,1890000,1890000,1890000,1890000],
+      ['Gasto','',128,'128 51 Gasto Adm','51 Gasto Adm','Nómina',510530,'Cesantías','Administrativo','Nómina',2449902,2449902,2449902,2449902,2449902,2449902,2449902,2449902,2449902,2449902,2449902,2449902],
+    ];
+    const ws=XLSX.utils.aoa_to_sheet([HDR,...ejemplos]);
+    ws['!cols']=colW;
+    // Add note row
+    XLSX.utils.book_append_sheet(wb,ws,'Plantilla Nomina');
+    XLSX.writeFile(wb,'Plantilla_Nomina_2026.xlsx');
+  } else {
+    const ejemplos=[
+      ['Gasto','Aumento salarial Mar-2026',128,'128 51 Gasto Adm','51 Gasto Adm','Aumentos',510506,'Sueldos','Administrativo','Aumentos',0,0,200000,200000,200000,200000,200000,200000,200000,200000,200000,200000],
+      ['Gasto','Aumento mérito Jul-2026',421,'421 Desarrollo','74 Costo','Aumentos',740101,'Sueldos','Desarrollo','Aumentos',0,0,0,0,0,0,350000,350000,350000,350000,350000,350000],
+      ['Gasto','Nueva vinculación Ene-2026',126,'126 Gentesoft','51 Gasto Adm','Aumentos',510506,'Sueldos','Gentesoft','Aumentos',2800000,2800000,2800000,2800000,2800000,2800000,2800000,2800000,2800000,2800000,2800000,2800000],
+    ];
+    const ws=XLSX.utils.aoa_to_sheet([HDR,...ejemplos]);
+    ws['!cols']=colW;
+    XLSX.utils.book_append_sheet(wb,ws,'Plantilla Aumentos');
+    XLSX.writeFile(wb,'Plantilla_Aumentos_2026.xlsx');
+  }
+}
+
+// ═══════════ EXPORT EXCEL ═══════════
+// Columnas del consolidado general (igual a plantilla general)
+const COL_HDR=['Tipo','Descripción','CC','CC Nombre','Cuenta maestro','Clase','Cuenta auxiliar','Nombre Cuenta','Presupuesto 2026','Prioridad',...MESES,'Total anual'];
+const COL_W=[8,30,8,22,16,16,16,35,16,12,...MESES.map(()=>12),14].map(w=>({wch:w}));
+
+function filaToExcelRow(f){
+  const tot=f.meses.reduce((s,v)=>s+(Number(v)||0),0);
+  return [f.tipo||'Gasto', f.descripcion||'', f.ccCod||'', f.ccNombre||'',
+    f.cuentaMaestro||'', f.clase||'', f.cuentaAux||'', f.nombreCuenta||'',
+    f.presupuesto2026||tot, f.prioridad||'',
+    ...f.meses.map(v=>Number(v)||0), tot];
+}
+
+function exportarExcel(){
+  const wb=XLSX.utils.book_new();
+
+  // ── Hoja por área (rubros de las áreas) ──
+  const allAreaRows=[];
+  AREAS.forEach(a=>{
+    const d=getAreaData(a.id);if(!d.rubros.length)return;
+    const rows=[COL_HDR];
+    d.rubros.forEach(r=>{
+      const tot=r.meses.reduce((s,v)=>s+(Number(v)||0),0);
+      const fila=[
+        'Gasto', r.descripcion||'', a.cc, a.name,
+        r.cuenta||'', r.cuenta||'', r.ctaAux||'', r.descripcion||'',
+        tot, r.prioridad||'',
+        ...r.meses.map(v=>Number(v)||0), tot
+      ];
+      rows.push(fila);allAreaRows.push(fila);
+    });
+    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=COL_W;
+    XLSX.utils.book_append_sheet(wb,ws,a.name.substring(0,28));
+  });
+
+  // ── CONSOLIDADO ÁREAS ──
+  if(allAreaRows.length){
+    const totRow=['TOTAL','','','','','','','','',...['',''],...MESES.map((_,mi)=>allAreaRows.reduce((s,r)=>s+(r[10+mi]||0),0)),allAreaRows.reduce((s,r)=>s+(r[22]||0),0)];
+    const ws=XLSX.utils.aoa_to_sheet([COL_HDR,...allAreaRows,totRow]);ws['!cols']=COL_W;
+    XLSX.utils.book_append_sheet(wb,ws,'CONSOLIDADO AREAS');
+  }
+
+  // ── GASTOS FIJOS (misma estructura) ──
+  const gfd=getGFData();
+  if(gfd.rubros.length){
+    const gfRows=[COL_HDR,...gfd.rubros.map(r=>{
+      const tot=r.meses.reduce((s,v)=>s+Math.round(v||0),0);
+      return ['Gasto','',r.cc,'',r.cuenta,'Servicio Público','',r.nombre,tot,'Obligatorio',...r.meses.map(v=>Math.round(v||0)),tot];
+    })];
+    const totGF=['TOTAL','','','','','','','','',...['',''],...MESES.map((_,mi)=>gfd.rubros.reduce((s,r)=>s+Math.round(r.meses[mi]||0),0)),gfd.rubros.reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+Math.round(v||0),0),0)];
+    gfRows.push(totGF);
+    const ws=XLSX.utils.aoa_to_sheet(gfRows);ws['!cols']=COL_W;
+    XLSX.utils.book_append_sheet(wb,ws,'GASTOS FIJOS');
+  }
+
+  // ── NÓMINA (estructura idéntica a plantilla general) ──
+  const nd=getNominaData();
+  const nomFilas=nd.filas||[];
+  if(nomFilas.length){
+    const nomRows=[COL_HDR,...nomFilas.map(filaToExcelRow)];
+    const totNom=['TOTAL','','','','','','','','',...['',''],...MESES.map((_,mi)=>nomFilas.reduce((s,f)=>s+(Number(f.meses[mi])||0),0)),nomFilas.reduce((s,f)=>s+f.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0)];
+    nomRows.push(totNom);
+    const ws=XLSX.utils.aoa_to_sheet(nomRows);ws['!cols']=COL_W;
+    XLSX.utils.book_append_sheet(wb,ws,'NOMINA');
+  }
+
+  // ── AUMENTOS (estructura idéntica, meses desde vigencia) ──
+  const ad=getAumentosData();
+  const aumFilas=ad.filas||[];
+  if(aumFilas.length){
+    const aumRows=[COL_HDR,...aumFilas.map(filaToExcelRow)];
+    const totAum=['TOTAL','','','','','','','','',...['',''],...MESES.map((_,mi)=>aumFilas.reduce((s,f)=>s+(Number(f.meses[mi])||0),0)),aumFilas.reduce((s,f)=>s+f.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0)];
+    aumRows.push(totAum);
+    const ws=XLSX.utils.aoa_to_sheet(aumRows);ws['!cols']=COL_W;
+    XLSX.utils.book_append_sheet(wb,ws,'AUMENTOS');
+  }
+
+  // ── CONSOLIDADO TOTAL (todas las fuentes juntas) ──
+  const allRows=[...allAreaRows,...(gfd.rubros.map(r=>{const tot=r.meses.reduce((s,v)=>s+Math.round(v||0),0);return ['Gasto','',r.cc,'',r.cuenta,'Servicio Público','',r.nombre,tot,'Obligatorio',...r.meses.map(v=>Math.round(v||0)),tot];})),...nomFilas.map(filaToExcelRow),...aumFilas.map(filaToExcelRow)];
+  if(allRows.length){
+    const totAll=['TOTAL','','','','','','','','',...['',''],...MESES.map((_,mi)=>allRows.reduce((s,r)=>s+(Number(r[10+mi])||0),0)),allRows.reduce((s,r)=>s+(Number(r[22])||0),0)];
+    const ws=XLSX.utils.aoa_to_sheet([COL_HDR,...allRows,totAll]);ws['!cols']=COL_W;
+    XLSX.utils.book_append_sheet(wb,ws,'CONSOLIDADO TOTAL');
+  }
+
+  XLSX.writeFile(wb,'Presupuesto_Sincosoft_SAS_2026_Completo.xlsx');
+}
+
+
+// ═══════════ CEO DASHBOARD ═══════════
+let ceoTab='resumen';
+let ceoAreaTab='todas';
+let ceoDecisiones={};  // {rubroKey: {dec:'APROBADO'|'RECHAZADO'|'REVISAR', obs:''}}
+let ceoChart=null;
+
+// Build full dataset from all sources
+function getCEOData(){
+  const allRubros=[];
+  AREAS.forEach(a=>{
+    const d=getAreaData(a.id);
+    d.rubros.forEach(r=>allRubros.push({...r,area:a.name,areaId:a.id,ccCod:a.cc,fuente:'area'}));
+  });
+  const nd=getNominaData();
+  (nd.filas||[]).forEach(f=>allRubros.push({...f,descripcion:f.nombreCuenta||f.descripcion,cuenta:f.clase,ctaAux:f.cuentaAux,prioridad:f.prioridad||'Nómina',areaId:'nomina',area:f.ccNombre||'Nómina',ccCod:f.ccCod,fuente:'nomina',execType:'mensual'}));
+  const ad=getAumentosData();
+  (ad.filas||[]).forEach(f=>allRubros.push({...f,descripcion:f.nombreCuenta||f.descripcion,cuenta:f.clase,ctaAux:f.cuentaAux,prioridad:f.prioridad||'Aumentos',areaId:'aumentos',area:f.ccNombre||'Aumentos',ccCod:f.ccCod,fuente:'aumentos',execType:'meses'}));
+  const gfd=getGFData();
+  (gfd.rubros||[]).forEach(r=>allRubros.push({descripcion:r.nombre,cuenta:r.clase,ctaAux:r.cuenta,prioridad:'Obligatorio',areaId:'gastosfijos',area:r.clase,ccCod:r.cc,meses:r.meses,fuente:'gastosfijos',execType:'mensual'}));
+  return allRubros;
+}
+
+function numM(v){const n=Math.abs(Math.round(Number(v)||0));if(n>=1e9)return '$'+(n/1e9).toFixed(1)+'B';if(n>=1e6)return '$'+(n/1e6).toFixed(0)+'M';return '$'+n.toLocaleString('es-CO')}
+
+function renderCEO(){
+  const all=getCEOData();
+  const gastos=all.filter(r=>r.prioridad!=='Ingreso'&&r.prioridad!=='ingreso');
+  const T_ING=all.filter(r=>r.prioridad==='Ingreso'||r.prioridad==='ingreso').reduce((s,r)=>s+Math.abs(r.meses.reduce((ss,v)=>ss+(Number(v)||0),0)),0);
+  const T_GASTO=gastos.reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const T_NOM=all.filter(r=>r.prioridad==='Nómina').reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const T_OBL=all.filter(r=>r.prioridad==='Obligatorio').reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const T_APR=all.filter(r=>r.prioridad==='Aprobado').reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const T_PEND=all.filter(r=>r.prioridad==='Pendiente').reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const UTIL=T_ING-T_GASTO;
+  const pendItems=all.filter(r=>r.prioridad==='Pendiente');
+
+  // ── KPI rows ──
+  function kpiCard(label,value,sub,color,bg){
+    return `<div class="ceo-kpi" style="border-left:3px solid ${color};background:${bg}">
+      <div class="ceo-kpi-label" style="color:${color}">${label}</div>
+      <div class="ceo-kpi-value" style="color:${color}">${numM(value)}</div>
+      ${sub?`<div class="ceo-kpi-sub">${sub}</div>`:''}
+    </div>`;
+  }
+  const utilColor=UTIL>=0?'#27500a':'#791f1f';
+  const utilBg=UTIL>=0?'#e2efda':'#fce4d6';
+  document.getElementById('ceo-kpi-top').innerHTML=
+    kpiCard('Ingreso proyectado',T_ING,'Año completo','#0c447c','#e6f1fb')+
+    kpiCard('Total gastos',T_GASTO,`${(T_GASTO/T_ING*100).toFixed(1)}% del ingreso`,'#0c447c','#deeaf1')+
+    kpiCard('Utilidad estimada',UTIL,UTIL>=0?'▲ Positiva':'▼ Negativa',utilColor,utilBg)+
+    kpiCard('Pendiente aprobación',T_PEND,`${pendItems.length} rubros`,'#633806','#fff2cc');
+  document.getElementById('ceo-kpi-bot').innerHTML=
+    kpiCard('Nómina + Aumentos',T_NOM,`${(T_NOM/T_GASTO*100).toFixed(1)}% del gasto`,'#085041','#e1f5ee')+
+    kpiCard('Obligatorios',T_OBL,`${(T_OBL/T_GASTO*100).toFixed(1)}% del gasto`,'#1f6391','#ddebf7')+
+    kpiCard('Aprobados',T_APR,`${(T_APR/T_GASTO*100).toFixed(1)}% del gasto`,'#27500a','#e2efda')+
+    `<div class="ceo-kpi" style="border-left:3px solid #534ab7;background:#eeedfe">
+      <div class="ceo-kpi-label" style="color:#3c3489">Cobertura sin pendientes</div>
+      <div class="ceo-kpi-value" style="color:#3c3489">${((T_NOM+T_OBL+T_APR)/T_GASTO*100).toFixed(1)}%</div>
+      <div class="ceo-kpi-sub">${numM(T_NOM+T_OBL+T_APR)} asegurados</div>
+    </div>`;
+
+  // ── Tabs ──
+  const TAB_DEFS=[['resumen','📋 Resumen'],['pendientes',`⚠️ Pendientes (${pendItems.length})`],['areas','🗂️ Por área'],['aprobacion','✅ Aprobación']];
+  document.getElementById('ceo-tabs').innerHTML=TAB_DEFS.map(([id,lbl])=>`<button class="tab${ceoTab===id?' active':''}" onclick="setCEOTab('${id}')">${lbl}</button>`).join('');
+
+  renderCEOResumen(all,T_GASTO,T_ING);
+  renderCEOPendientes(pendItems);
+  renderCEOAreas(all);
+  renderCEOAprobacion(T_GASTO,T_ING,T_NOM,T_OBL,T_APR,T_PEND,UTIL);
+}
+
+function setCEOTab(t){
+  ceoTab=t;
+  document.querySelectorAll('.ceo-tab-panel').forEach(p=>p.style.display='none');
+  document.getElementById('ceo-tab-'+t).style.display='block';
+  document.querySelectorAll('#ceo-tabs .tab').forEach(b=>{
+    b.classList.toggle('active', b.textContent.trim().startsWith(t==='resumen'?'📋':t==='pendientes'?'⚠':t==='areas'?'🗂':'✅'));
+  });
+  document.getElementById('ceo-tabs').innerHTML=document.getElementById('ceo-tabs').innerHTML.replace(/class="tab active"/g,'class="tab"');
+  const buttons=document.querySelectorAll('#ceo-tabs .tab');
+  const idx={'resumen':0,'pendientes':1,'areas':2,'aprobacion':3}[t];
+  if(buttons[idx]) buttons[idx].className='tab active';
+}
+
+function renderCEOResumen(all,T_GASTO,T_ING){
+  // By clase bars
+  const byClase={};
+  all.filter(r=>r.prioridad!=='Ingreso').forEach(r=>{
+    const k=r.cuenta||r.Clase||'Otros';
+    byClase[k]=(byClase[k]||0)+r.meses.reduce((s,v)=>s+(Number(v)||0),0);
+  });
+  const sorted=Object.entries(byClase).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const maxV=sorted[0]?.[1]||1;
+  const BAR_COLORS=['#1F5294','#2E75B6','#1F6391','#375623','#534ab7','#7F6000','#843C0c','#0f6e56','#185fa5','#3c3489','#633806','#1C3557'];
+  document.getElementById('ceo-por-clase').innerHTML=sorted.map(([k,v],i)=>`
+    <div class="clase-bar-wrap">
+      <div class="clase-bar-label">
+        <span style="font-size:11px;color:var(--text)">${k}</span>
+        <span style="font-size:11px;font-weight:600;color:var(--text2)">${numM(v)} <span style="color:var(--text3);font-weight:400">(${(v/T_GASTO*100).toFixed(1)}%)</span></span>
+      </div>
+      <div class="clase-bar-track"><div class="clase-bar-fill" style="width:${(v/maxV*100).toFixed(1)}%;background:${BAR_COLORS[i%BAR_COLORS.length]}"></div></div>
+    </div>`).join('');
+
+  // Monthly by prioridad table
+  const PRIOS=[['Nómina','#1F5294','#deeaf1'],['Obligatorio','#1f6391','#ddebf7'],['Aprobado','#375623','#e2efda'],['Pendiente','#633806','#fff2cc']];
+  let mesHtml=`<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr><th style="text-align:left;padding:4px 6px;background:var(--bg2);font-size:10px">Prioridad</th>`;
+  MESES.forEach(m=>mesHtml+=`<th style="text-align:right;padding:4px 4px;background:var(--bg2);font-size:10px">${m}</th>`);
+  mesHtml+=`<th style="text-align:right;padding:4px 6px;background:var(--bg2);font-size:10px">Total</th></tr></thead><tbody>`;
+  PRIOS.forEach(([p,fc,bg])=>{
+    const vals=MESES.map((_,mi)=>all.filter(r=>r.prioridad===p).reduce((s,r)=>s+(Number(r.meses[mi])||0),0));
+    const tot=vals.reduce((s,v)=>s+v,0);
+    mesHtml+=`<tr><td style="padding:4px 6px;font-weight:600;color:${fc};background:${bg}">${p}</td>`;
+    vals.forEach(v=>mesHtml+=`<td style="text-align:right;padding:3px 4px;color:${fc};background:${bg};font-size:10px">${v>0?'$'+Math.round(v/1e6)+'M':''}</td>`);
+    mesHtml+=`<td style="text-align:right;padding:4px 6px;font-weight:700;color:${fc};background:${bg}">${numM(tot)}</td></tr>`;
+  });
+  // Totals row
+  const totVals=MESES.map((_,mi)=>all.filter(r=>r.prioridad!=='Ingreso').reduce((s,r)=>s+(Number(r.meses[mi])||0),0));
+  const ingVals=MESES.map((_,mi)=>Math.abs(all.filter(r=>r.prioridad==='Ingreso').reduce((s,r)=>s+(Number(r.meses[mi])||0),0)));
+  mesHtml+=`<tr><td style="padding:4px 6px;font-weight:700;color:#fff;background:#1C3557">Total gastos</td>`;
+  totVals.forEach(v=>mesHtml+=`<td style="text-align:right;padding:3px 4px;font-weight:700;color:#fff;background:#1C3557;font-size:10px">$${Math.round(v/1e6)}M</td>`);
+  mesHtml+=`<td style="text-align:right;padding:4px 6px;font-weight:700;color:#fff;background:#1C3557">${numM(T_GASTO)}</td></tr>`;
+  mesHtml+=`<tr><td style="padding:4px 6px;font-weight:700;color:#27500a;background:#e2efda">Ingreso proy.</td>`;
+  ingVals.forEach(v=>mesHtml+=`<td style="text-align:right;padding:3px 4px;font-weight:700;color:#27500a;background:#e2efda;font-size:10px">$${Math.round(v/1e6)}M</td>`);
+  mesHtml+=`<td style="text-align:right;padding:4px 6px;font-weight:700;color:#27500a;background:#e2efda">${numM(T_ING)}</td></tr>`;
+  mesHtml+=`</tbody></table>`;
+  document.getElementById('ceo-por-mes').innerHTML=mesHtml;
+
+  // Chart
+  const ctx=document.getElementById('ceo-chart').getContext('2d');
+  if(ceoChart){ceoChart.destroy();ceoChart=null;}
+  ceoChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:MESES,
+      datasets:[
+        {label:'Gastos',data:totVals,backgroundColor:'rgba(30,83,165,0.8)',borderColor:'#1C3557',borderWidth:1},
+        {label:'Ingreso',data:ingVals,backgroundColor:'rgba(55,86,35,0.7)',borderColor:'#375623',borderWidth:1}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'top',labels:{font:{size:11},boxWidth:14}}},scales:{y:{ticks:{callback:v=>'$'+Math.round(v/1e6)+'M',font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{font:{size:10}}}}}
+  });
+}
+
+function renderCEOPendientes(pendItems){
+  if(!pendItems.length){
+    document.getElementById('ceo-pendientes-list').innerHTML='<div class="empty-state"><span class="icon">✅</span><div style="font-weight:600;margin-bottom:4px">Sin rubros pendientes</div><div style="font-size:12px">Todos los rubros han sido aprobados u clasificados</div></div>';
+    document.getElementById('ceo-decision-summary').innerHTML='';
+    return;
+  }
+  document.getElementById('ceo-pendientes-list').innerHTML=pendItems.map((r,i)=>{
+    const key=`pend_${i}_${r.descripcion}`;
+    const dec=ceoDecisiones[key];
+    const total=r.meses.reduce((s,v)=>s+(Number(v)||0),0);
+    const mesViz=r.meses.map((v,mi)=>`<div class="mes-mini-cell" style="background:${v>0?'var(--blue-bg)':'var(--bg3)'};color:${v>0?'var(--blue-text)':'var(--text3)'}"><div style="font-size:9px">${MESES[mi]}</div><div>${v>0?'$'+Math.round(v/1e6)+'M':''}</div></div>`).join('');
+    return `<div class="pend-card" id="pend-card-${i}">
+      <div class="pend-card-header">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${r.descripcion||r.nombreCuenta||'Sin descripción'}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">${r.area||r.ccNombre||''} · ${r.cuenta||r.clase||''} ${r.ctaAux?'· '+r.ctaAux:''}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--amber-text);margin-top:3px">Total anual: ${numFmt(total)}</div>
+        </div>
+      </div>
+      <div class="mes-mini">${mesViz}</div>
+      <div style="margin-top:10px">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">Decisión CEO:</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+          <button class="pend-dec-btn${dec&&dec.dec==='APROBADO'?' aprobado':''}" onclick="setCEODecision('${key}','APROBADO',${i})">✓ Aprobar</button>
+          <button class="pend-dec-btn${dec&&dec.dec==='RECHAZADO'?' rechazado':''}" onclick="setCEODecision('${key}','RECHAZADO',${i})">✕ Rechazar</button>
+          <button class="pend-dec-btn${dec&&dec.dec==='REVISAR'?' revisar':''}" onclick="setCEODecision('${key}','REVISAR',${i})">↩ Revisar</button>
+        </div>
+        <textarea placeholder="Observaciones CEO (opcional)..." style="width:100%;font-size:12px;padding:6px 8px;min-height:48px;border:0.5px solid var(--border2);border-radius:var(--r);background:var(--bg);color:var(--text);resize:vertical" onchange="setCEOObs('${key}',this.value)">${dec&&dec.obs?dec.obs:''}</textarea>
+      </div>
+    </div>`;
+  }).join('');
+  renderCEODecisionSummary(pendItems);
+}
+
+function setCEODecision(key,dec,idx){
+  if(!ceoDecisiones[key]) ceoDecisiones[key]={dec:'',obs:''};
+  ceoDecisiones[key].dec=dec;
+  try{setD('_ceo_dec',ceoDecisiones)}catch(e){}
+  // Update buttons in place
+  const card=document.getElementById('pend-card-'+idx);
+  if(card){
+    card.querySelectorAll('.pend-dec-btn').forEach(b=>{
+      b.className='pend-dec-btn';
+      if((dec==='APROBADO'&&b.textContent.includes('Aprobar'))||
+         (dec==='RECHAZADO'&&b.textContent.includes('Rechazar'))||
+         (dec==='REVISAR'&&b.textContent.includes('Revisar')))
+        b.classList.add(dec.toLowerCase());
+    });
+    card.style.borderColor=dec==='APROBADO'?'var(--green)':dec==='RECHAZADO'?'var(--red-text)':'var(--amber)';
+  }
+  // Get all pending items to re-render summary
+  const all=getCEOData();
+  const pendItems=all.filter(r=>r.prioridad==='Pendiente');
+  renderCEODecisionSummary(pendItems);
+  renderCEOAprobacion2();
+}
+
+function setCEOObs(key,obs){
+  if(!ceoDecisiones[key]) ceoDecisiones[key]={dec:'',obs:''};
+  ceoDecisiones[key].obs=obs;
+  try{setD('_ceo_dec',ceoDecisiones)}catch(e){}
+}
+
+function renderCEODecisionSummary(pendItems){
+  const aprobados=pendItems.filter((_,i)=>ceoDecisiones[`pend_${i}_${pendItems[i]?.descripcion}`]?.dec==='APROBADO');
+  const rechazados=pendItems.filter((_,i)=>ceoDecisiones[`pend_${i}_${pendItems[i]?.descripcion}`]?.dec==='RECHAZADO');
+  const revisar=pendItems.filter((_,i)=>ceoDecisiones[`pend_${i}_${pendItems[i]?.descripcion}`]?.dec==='REVISAR');
+  const sinDec=pendItems.filter((_,i)=>!ceoDecisiones[`pend_${i}_${pendItems[i]?.descripcion}`]?.dec);
+  const sumV=(arr)=>arr.reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  document.getElementById('ceo-decision-summary').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
+      <div style="padding:10px;background:var(--green-bg);border-radius:var(--r);text-align:center">
+        <div style="font-size:11px;color:var(--green-text);font-weight:700">Aprobados</div>
+        <div style="font-size:18px;font-weight:700;color:var(--green-text)">${aprobados.length}</div>
+        <div style="font-size:11px;color:var(--green-text)">${numM(sumV(aprobados))}</div>
+      </div>
+      <div style="padding:10px;background:var(--red-bg);border-radius:var(--r);text-align:center">
+        <div style="font-size:11px;color:var(--red-text);font-weight:700">Rechazados</div>
+        <div style="font-size:18px;font-weight:700;color:var(--red-text)">${rechazados.length}</div>
+        <div style="font-size:11px;color:var(--red-text)">${numM(sumV(rechazados))}</div>
+      </div>
+      <div style="padding:10px;background:var(--amber-bg);border-radius:var(--r);text-align:center">
+        <div style="font-size:11px;color:var(--amber-text);font-weight:700">Por revisar</div>
+        <div style="font-size:18px;font-weight:700;color:var(--amber-text)">${revisar.length}</div>
+        <div style="font-size:11px;color:var(--amber-text)">${numM(sumV(revisar))}</div>
+      </div>
+      <div style="padding:10px;background:var(--bg2);border-radius:var(--r);text-align:center">
+        <div style="font-size:11px;color:var(--text2);font-weight:700">Sin decisión</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text2)">${sinDec.length}</div>
+        <div style="font-size:11px;color:var(--text3)">${numM(sumV(sinDec))}</div>
+      </div>
+    </div>`;
+}
+
+function renderCEOAreas(all){
+  const areaIds=['todas',...AREAS.map(a=>a.id),'nomina','aumentos','gastosfijos'];
+  const areaNames={'todas':'Todas','nomina':'Nómina','aumentos':'Aumentos','gastosfijos':'Gastos fijos'};
+  AREAS.forEach(a=>{areaNames[a.id]=a.icon+' '+a.name;});
+  document.getElementById('ceo-area-tabs').innerHTML=areaIds.map(id=>`<button class="tab${ceoAreaTab===id?' active':''}" onclick="setCEOAreaTab('${id}')">${areaNames[id]||id}</button>`).join('');
+  renderCEOAreasTable(all);
+}
+
+function setCEOAreaTab(id){ceoAreaTab=id;const all=getCEOData();renderCEOAreas(all);renderCEOAreasTable(all);}
+
+function renderCEOAreasTable(all){
+  const filtered=ceoAreaTab==='todas'?all.filter(r=>r.prioridad!=='Ingreso'):all.filter(r=>r.areaId===ceoAreaTab&&r.prioridad!=='Ingreso');
+  if(!filtered.length){document.getElementById('ceo-areas-table').innerHTML='<div class="empty-state"><span class="icon">📂</span><div>Sin rubros para esta área</div></div>';return;}
+  const totM=MESES.map((_,mi)=>filtered.reduce((s,r)=>s+(Number(r.meses[mi])||0),0));
+  const totA=totM.reduce((s,v)=>s+v,0);
+  const mh=MESES.map(m=>`<th style="text-align:right;padding:4px;font-size:10px;background:var(--bg2)">${m}</th>`).join('');
+  const tc=totM.map(v=>`<td style="text-align:right;font-weight:700;padding:4px;font-size:10px;background:var(--blue-bg);color:var(--blue-text)">${v>0?'$'+Math.round(v/1e6)+'M':''}</td>`).join('');
+  const rows=filtered.map(r=>{
+    const tot=r.meses.reduce((s,v)=>s+(Number(v)||0),0);
+    const pb=r.prioridad==='Obligatorio'?'badge-ok':r.prioridad==='Aprobado'?'badge-blue':r.prioridad==='Nómina'?'badge-purple':r.prioridad==='Pendiente'?'badge-pend':'badge-empty';
+    const mc=r.meses.map(v=>`<td style="text-align:right;padding:3px 4px;font-size:10px">${Number(v)>0?'$'+Math.round(Number(v)/1e6)+'M':''}</td>`).join('');
+    return `<tr style="border-bottom:0.5px solid var(--border)">
+      <td style="padding:5px 6px;font-size:12px;font-weight:600">${r.descripcion||r.NombreCuenta||'—'}</td>
+      <td style="padding:5px 4px;font-size:11px;color:var(--text2)">${r.area||''}</td>
+      <td style="padding:5px 4px;font-size:11px">${r.cuenta||''}</td>
+      <td style="padding:5px 4px"><span class="badge ${pb}" style="font-size:10px">${r.prioridad}</span></td>
+      ${mc}
+      <td style="text-align:right;padding:5px 6px;font-weight:700;font-size:12px;color:var(--blue-text)">${numFmt(tot)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('ceo-areas-table').innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:11px">
+    <thead><tr>
+      <th style="text-align:left;padding:6px;font-size:11px;background:var(--bg2)">Descripción</th>
+      <th style="text-align:left;padding:6px;font-size:10px;background:var(--bg2)">Área</th>
+      <th style="text-align:left;padding:6px;font-size:10px;background:var(--bg2)">Cuenta</th>
+      <th style="padding:6px;font-size:10px;background:var(--bg2)">Prioridad</th>
+      ${mh}
+      <th style="text-align:right;padding:6px;font-size:11px;background:var(--bg2)">Total</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr>
+      <td colspan="4" style="padding:6px;font-weight:700;background:var(--blue-bg);color:var(--blue-text)">TOTAL</td>
+      ${tc}
+      <td style="text-align:right;padding:6px;font-weight:700;background:var(--blue-bg);color:var(--blue-text)">${numFmt(totA)}</td>
+    </tr></tfoot>
+  </table>`;
+}
+
+function renderCEOAprobacion(T_GASTO,T_ING,T_NOM,T_OBL,T_APR,T_PEND,UTIL){
+  renderCEOAprobacion2();
+}
+
+function renderCEOAprobacion2(){
+  const all=getCEOData();
+  const T_ING=all.filter(r=>r.prioridad==='Ingreso').reduce((s,r)=>s+Math.abs(r.meses.reduce((ss,v)=>ss+(Number(v)||0),0)),0);
+  const T_GASTO=all.filter(r=>r.prioridad!=='Ingreso').reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const T_NOM=all.filter(r=>r.prioridad==='Nómina').reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const T_OBL=all.filter(r=>r.prioridad==='Obligatorio').reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const T_APR=all.filter(r=>r.prioridad==='Aprobado').reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const T_PEND=all.filter(r=>r.prioridad==='Pendiente').reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const UTIL=T_ING-T_GASTO;
+  const pendItems=all.filter(r=>r.prioridad==='Pendiente');
+  const aprobadosV=pendItems.filter((_,i)=>ceoDecisiones[`pend_${i}_${pendItems[i]?.descripcion}`]?.dec==='APROBADO').reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+  const rechazadosV=pendItems.filter((_,i)=>ceoDecisiones[`pend_${i}_${pendItems[i]?.descripcion}`]?.dec==='RECHAZADO').reduce((s,r)=>s+r.meses.reduce((ss,v)=>ss+(Number(v)||0),0),0);
+
+  function row(label,val,pct,fc,bg,bold){
+    return `<tr style="border-bottom:0.5px solid var(--border)">
+      <td style="padding:8px 12px;font-size:13px;${bold?'font-weight:700;':''}color:${fc};background:${bg}">${label}</td>
+      <td style="text-align:right;padding:8px 12px;font-size:13px;${bold?'font-weight:700;':''}color:${fc};background:${bg}">${numFmt(val)}</td>
+      <td style="text-align:center;padding:8px 12px;font-size:12px;color:${fc};background:${bg}">${pct!=null?(val/T_GASTO*100).toFixed(1)+'%':'—'}</td>
+    </tr>`;
+  }
+  document.getElementById('ceo-aprobacion-table').innerHTML=`
+    <table style="width:100%;border-collapse:collapse;margin-bottom:1rem">
+      <thead><tr>
+        <th style="text-align:left;padding:8px 12px;background:#1C3557;color:#fff;border-radius:var(--r) 0 0 0;font-size:12px">Concepto</th>
+        <th style="text-align:right;padding:8px 12px;background:#1C3557;color:#fff;font-size:12px">Valor anual</th>
+        <th style="text-align:center;padding:8px 12px;background:#1C3557;color:#fff;border-radius:0 var(--r) 0 0;font-size:12px">% del total gasto</th>
+      </tr></thead>
+      <tbody>
+        ${row('Nómina + Aumentos',T_NOM,true,'#085041','#e1f5ee',false)}
+        ${row('Obligatorios',T_OBL,true,'#1f6391','#ddebf7',false)}
+        ${row('Aprobados por áreas',T_APR,true,'#27500a','#e2efda',false)}
+        ${row('Pendientes — aprobados por CEO',aprobadosV,true,'#27500a','#f0fff4',false)}
+        ${row('Pendientes — rechazados CEO',rechazadosV,true,'#791f1f','#fce4d6',false)}
+        ${row('TOTAL GASTOS PRESUPUESTADOS',T_GASTO,null,'#fff','#1C3557',true)}
+        ${row('INGRESO PROYECTADO',T_ING,null,UTIL>=0?'#27500a':'#791f1f',UTIL>=0?'#e2efda':'#fce4d6',true)}
+        ${row(UTIL>=0?'UTILIDAD ESTIMADA':'DÉFICIT ESTIMADO',UTIL,null,UTIL>=0?'#27500a':'#791f1f',UTIL>=0?'#e2efda':'#fce4d6',true)}
+      </tbody>
+    </table>`;
+}
+
+function exportarExcelCEO(){
+  const wb=XLSX.utils.book_new();
+  const all=getCEOData();
+  const COL_HDR=['Tipo','Descripción','CC','CC Nombre','Cuenta maestro','Clase','Cuenta auxiliar','Nombre Cuenta','Presupuesto 2027','Prioridad',...MESES,'Total anual','Decisión CEO','Observaciones CEO'];
+  const pendItems=all.filter(r=>r.prioridad==='Pendiente');
+  // All rubros sheet
+  const allRows=[COL_HDR,...all.filter(r=>r.prioridad!=='Ingreso').map(r=>{
+    const tot=r.meses.reduce((s,v)=>s+(Number(v)||0),0);
+    const i=pendItems.findIndex(p=>p.descripcion===r.descripcion&&p.areaId===r.areaId);
+    const dec=i>=0?ceoDecisiones[`pend_${i}_${r.descripcion}`]:null;
+    return ['Gasto',r.descripcion,r.ccCod||'',r.area||'',r.cuentaMaestro||'',r.cuenta||'',r.ctaAux||'',r.NombreCuenta||r.descripcion,tot,r.prioridad,...r.meses.map(v=>Number(v)||0),tot,dec?.dec||'',dec?.obs||''];
+  })];
+  const ws1=XLSX.utils.aoa_to_sheet(allRows);
+  ws1['!cols']=[8,30,8,22,14,16,14,30,16,12,...MESES.map(()=>11),13,14,30].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws1,'CONSOLIDADO TOTAL');
+  // Pendientes con decisiones
+  const pRows=[['Área','Clase','Descripción','Total anual',...MESES,'Decisión CEO','Observaciones'],...pendItems.map((r,i)=>{
+    const dec=ceoDecisiones[`pend_${i}_${r.descripcion}`];
+    const tot=r.meses.reduce((s,v)=>s+(Number(v)||0),0);
+    return [r.area,r.cuenta,r.descripcion,tot,...r.meses.map(v=>Number(v)||0),dec?.dec||'SIN DECISIÓN',dec?.obs||''];
+  })];
+  const ws2=XLSX.utils.aoa_to_sheet(pRows);
+  ws2['!cols']=[22,16,35,14,...MESES.map(()=>11),16,35].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws2,'PENDIENTES — DECISIONES CEO');
+  XLSX.writeFile(wb,'Dashboard_CEO_Sincosoft_2027.xlsx');
+}
+
+
+
+// ═══════════ LOGIN ═══════════
+const ACCESS_PIN = 'PruebasSOFT27';
+let loginOk = false;
+
+function doLogin(){
+  const val = document.getElementById('login-pin').value;
+  const errEl = document.getElementById('login-error');
+  if(val === ACCESS_PIN){
+    loginOk = true;
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    try{ sessionStorage.setItem('ss_login','1'); }catch(e){}
+    updateHomeStatus(); renderHome();
+  } else {
+    errEl.textContent = 'PIN incorrecto. Verifica e intenta de nuevo.';
+    const wrap = document.getElementById('login-pin').parentElement;
+    wrap.classList.remove('login-shake');
+    void wrap.offsetWidth; // reflow to restart animation
+    wrap.classList.add('login-shake');
+    document.getElementById('login-pin').value = '';
+    document.getElementById('login-pin').focus();
+    setTimeout(()=>errEl.textContent='', 3000);
+  }
+}
+
+function toggleLoginEye(){
+  const inp = document.getElementById('login-pin');
+  const btn = document.getElementById('login-eye-btn');
+  if(inp.type === 'password'){ inp.type='text'; btn.textContent='🙈'; }
+  else { inp.type='password'; btn.textContent='👁'; }
+}
+
+// Persist login within session (page refresh keeps you in)
+function checkSessionLogin(){
+  try{
+    if(sessionStorage.getItem('ss_login')==='1'){
+      loginOk=true;
+      document.getElementById('screen-login').style.display='none';
+      document.getElementById('main-app').style.display='block';
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+
+// ═══════════ INIT ═══════════
+try{const saved=getD('_ceo_dec');if(saved)ceoDecisiones=saved;}catch(e){}
+if(!checkSessionLogin()){
+  // Show login, focus input
+  setTimeout(()=>{ try{document.getElementById('login-pin').focus();}catch(e){} },100);
+} else {
+  updateHomeStatus();renderHome();
+}
+</script>
+</div><!-- /main-app -->
+</body></html>
