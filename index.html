@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Presupuesto Sincosoft SAS 2026</title>
+<title>Sincosoft SAS · Presupuesto 2027</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -140,10 +140,96 @@ textarea{resize:vertical;min-height:58px;line-height:1.5}
 .pend-dec-btn.revisar{background:var(--amber-bg);color:var(--amber-text);border-color:transparent}
 .mes-mini{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin-top:6px}
 .mes-mini-cell{text-align:center;font-size:10px;padding:2px 1px;border-radius:3px}
+
+/* ── LOGIN SCREEN ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0d1f35 0%,#1C3557 50%,#2E75B6 100%);
+  padding:1rem;position:relative;overflow:hidden}
+.login-wrap::before{content:'';position:absolute;top:-40%;left:-20%;width:140%;height:140%;
+  background:radial-gradient(ellipse at 30% 40%,rgba(46,117,182,0.25) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 70%,rgba(28,53,87,0.4) 0%,transparent 50%);
+  pointer-events:none}
+.login-card{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);
+  border:0.5px solid rgba(255,255,255,0.15);border-radius:20px;
+  padding:2.5rem 2rem;max-width:420px;width:100%;
+  box-shadow:0 24px 64px rgba(0,0,0,0.4);position:relative;z-index:1;text-align:center}
+.login-logo{margin-bottom:1.5rem}
+.login-logo-icon{width:64px;height:64px;background:linear-gradient(135deg,#2E75B6,#1C3557);
+  border-radius:16px;display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;font-size:28px;box-shadow:0 8px 24px rgba(46,117,182,0.4)}
+.login-company{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:2px}
+.login-sub{font-size:12px;color:rgba(189,215,238,0.8);letter-spacing:1px;text-transform:uppercase;font-weight:500}
+.login-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:6px;margin-top:1.5rem}
+.login-desc{font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:1.5rem;line-height:1.6}
+.login-input-wrap{position:relative;margin-bottom:1rem}
+.login-input{width:100%;padding:14px 48px 14px 16px;font-size:15px;font-weight:600;
+  letter-spacing:3px;text-align:center;border:1px solid rgba(255,255,255,0.2);
+  border-radius:12px;background:rgba(255,255,255,0.08);color:#fff;outline:none;
+  transition:border-color .2s,background .2s}
+.login-input::placeholder{letter-spacing:1px;font-weight:400;font-size:13px;color:rgba(255,255,255,0.35)}
+.login-input:focus{border-color:rgba(189,215,238,0.6);background:rgba(255,255,255,0.12)}
+.login-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.4);font-size:18px;padding:4px}
+.login-btn{width:100%;padding:14px;font-size:14px;font-weight:700;letter-spacing:.5px;
+  background:linear-gradient(135deg,#2E75B6,#185fa5);color:#fff;border:none;
+  border-radius:12px;cursor:pointer;transition:opacity .2s,transform .1s;
+  box-shadow:0 4px 16px rgba(46,117,182,0.4)}
+.login-btn:hover{opacity:.92}.login-btn:active{transform:scale(.98)}
+.login-error{color:#f09595;font-size:12px;margin-top:8px;min-height:18px;font-weight:500}
+.login-footer{margin-top:1.75rem;font-size:11px;color:rgba(255,255,255,0.25);line-height:1.6}
+.login-dots{display:flex;justify-content:center;gap:6px;margin-top:1.5rem}
+.login-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2)}
+.login-dot.active{background:#2E75B6;width:20px;border-radius:3px}
+.login-shake{animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
 </style>
 </head>
 <body>
-<div class="app">
+
+<!-- ════════════════════════ LOGIN ════════════════════════ -->
+<div id="screen-login" style="display:block">
+  <div class="login-wrap">
+    <div class="login-card">
+
+      <!-- Logo -->
+      <div class="login-logo">
+        <div class="login-logo-icon">📊</div>
+        <div class="login-company">SINCOSOFT SAS</div>
+        <div class="login-sub">Plataforma de Presupuesto 2027</div>
+      </div>
+
+      <!-- Form -->
+      <div class="login-title">Bienvenido</div>
+      <div class="login-desc">Ingresa el PIN de acceso para continuar.<br>Si no lo tienes, contáctate con el área financiera.</div>
+
+      <div class="login-input-wrap">
+        <input type="password" id="login-pin" class="login-input"
+          placeholder="Ingresa tu PIN de acceso"
+          onkeydown="if(event.key==='Enter')doLogin()"
+          autocomplete="off" maxlength="30">
+        <button class="login-eye" onclick="toggleLoginEye()" id="login-eye-btn" title="Mostrar/ocultar">👁</button>
+      </div>
+
+      <button class="login-btn" onclick="doLogin()">Ingresar →</button>
+      <div class="login-error" id="login-error"></div>
+
+      <!-- Decorative dots -->
+      <div class="login-dots">
+        <div class="login-dot active"></div>
+        <div class="login-dot"></div>
+        <div class="login-dot"></div>
+      </div>
+
+      <div class="login-footer">
+        Presupuesto 2027 · Fase de pruebas<br>
+        Para soporte contacta al área de Sistemas
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="main-app" style="display:none">
+
 
 <!-- HOME -->
 <div id="screen-home" class="screen active">
@@ -657,7 +743,12 @@ function numFmt(n){if(!n||isNaN(n))return '—';return '$'+Math.round(Number(n))
 function numK(n){const v=Math.round(Number(n)||0);if(v===0)return '';return '$'+Math.round(v/1000).toLocaleString('es-CO')+'K'}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active')}
 function goHome(){try{const saved=getD('_ceo_dec');if(saved)ceoDecisiones=saved;}catch(e){}
-updateHomeStatus();renderHome();showScreen('home')}
+if(!checkSessionLogin()){
+  // Show login, focus input
+  setTimeout(()=>{ try{document.getElementById('login-pin').focus();}catch(e){} },100);
+} else {
+  updateHomeStatus();renderHome();
+}showScreen('home')}
 function closeModal(id){document.getElementById(id).style.display='none'}
 
 function updateHomeStatus(){
@@ -1922,8 +2013,61 @@ function exportarExcelCEO(){
 }
 
 
+
+// ═══════════ LOGIN ═══════════
+const ACCESS_PIN = 'PruebasSOFT27';
+let loginOk = false;
+
+function doLogin(){
+  const val = document.getElementById('login-pin').value;
+  const errEl = document.getElementById('login-error');
+  if(val === ACCESS_PIN){
+    loginOk = true;
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    try{ sessionStorage.setItem('ss_login','1'); }catch(e){}
+    updateHomeStatus(); renderHome();
+  } else {
+    errEl.textContent = 'PIN incorrecto. Verifica e intenta de nuevo.';
+    const wrap = document.getElementById('login-pin').parentElement;
+    wrap.classList.remove('login-shake');
+    void wrap.offsetWidth; // reflow to restart animation
+    wrap.classList.add('login-shake');
+    document.getElementById('login-pin').value = '';
+    document.getElementById('login-pin').focus();
+    setTimeout(()=>errEl.textContent='', 3000);
+  }
+}
+
+function toggleLoginEye(){
+  const inp = document.getElementById('login-pin');
+  const btn = document.getElementById('login-eye-btn');
+  if(inp.type === 'password'){ inp.type='text'; btn.textContent='🙈'; }
+  else { inp.type='password'; btn.textContent='👁'; }
+}
+
+// Persist login within session (page refresh keeps you in)
+function checkSessionLogin(){
+  try{
+    if(sessionStorage.getItem('ss_login')==='1'){
+      loginOk=true;
+      document.getElementById('screen-login').style.display='none';
+      document.getElementById('main-app').style.display='block';
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+
 // ═══════════ INIT ═══════════
 try{const saved=getD('_ceo_dec');if(saved)ceoDecisiones=saved;}catch(e){}
-updateHomeStatus();renderHome();
+if(!checkSessionLogin()){
+  // Show login, focus input
+  setTimeout(()=>{ try{document.getElementById('login-pin').focus();}catch(e){} },100);
+} else {
+  updateHomeStatus();renderHome();
+}
 </script>
-</div></body></html>
+</div><!-- /main-app -->
+</body></html>
